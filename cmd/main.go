@@ -24,6 +24,7 @@ func main() {
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt)
+
 	go func() {
 		<-sigs
 		log.Print("Server Down")
@@ -46,16 +47,17 @@ func main() {
 		mu.Lock()
 		defer mu.Unlock()
 
-		ui.WorldView(w).Render(r.Context(), write)
+		worldSnapshot := w.Snapshot()
+		ui.WorldView(&worldSnapshot).Render(r.Context(), write)
 	})
 
 	http.HandleFunc("/tick", func(write http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		defer mu.Unlock()
 
-		fmt.Println("Called Tick")
+		worldSnapshot := w.Snapshot()
 
-		ui.WorldView(w).Render(r.Context(), write)
+		ui.WorldView(&worldSnapshot).Render(r.Context(), write)
 	})
 
 	http.HandleFunc("/metrics", func(write http.ResponseWriter, r *http.Request) {

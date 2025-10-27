@@ -25,7 +25,12 @@ type Cell struct {
 
 type World struct {
 	Grid   [Height][Width]Cell
-	mu     sync.Mutex
+	mu     sync.RWMutex
+	Agents []*Agent
+}
+
+type WorldViewData struct {
+	Grid   [Height][Width]Cell
 	Agents []*Agent
 }
 
@@ -52,11 +57,22 @@ func (w *World) Tick() {
 	defer w.mu.Unlock()
 
 	for _, a := range w.Agents {
-		// fmt.Printf("%s\t", "Action From Struct Agent Called")
 		a.Act(w)
 	}
 
 	if rand.Float64() < 0.2 {
 		w.spawnFood()
 	}
+}
+
+func (w *World) Snapshot() WorldViewData {
+	w.mu.RLock()
+	defer w.mu.RUnlock()
+
+	var copy WorldViewData
+
+	copy.Grid = w.Grid
+	copy.Agents = append([]*Agent(nil), w.Agents...)
+
+	return copy
 }

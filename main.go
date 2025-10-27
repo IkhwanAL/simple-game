@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"sync"
 	"time"
 
@@ -55,6 +56,12 @@ func main() {
 		fmt.Println("Called Tick")
 
 		ui.WorldView(w).Render(r.Context(), write)
+	})
+
+	http.HandleFunc("/metrics", func(write http.ResponseWriter, r *http.Request) {
+		var m runtime.MemStats
+		runtime.ReadMemStats(&m)
+		fmt.Fprintf(write, "Alloc = %v KB\nNumGoroutine = %v\n", m.Alloc/1024, runtime.NumGoroutine())
 	})
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))

@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"sync"
 	"time"
 
@@ -17,6 +20,15 @@ var (
 
 func main() {
 	world.InitLogger()
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt)
+	go func() {
+		<-sigs
+		log.Print("Server Down")
+		// Snapshot Occur Here
+		os.Exit(1)
+	}()
 
 	agent := world.NewAgent(10, 10)
 	w.Agents = append(w.Agents, agent)

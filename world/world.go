@@ -44,6 +44,13 @@ func NewWorld() *World {
 	return world
 }
 
+func (w *World) AddAgent(a *Agent) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	w.Agents = append(w.Agents, a)
+}
+
 func (w *World) spawnFood() {
 	x, y := rand.IntN(Height), rand.IntN(Width)
 

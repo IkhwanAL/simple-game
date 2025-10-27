@@ -10,7 +10,7 @@ generate:
 	templ generate
 	npx @tailwindcss/cli -i ./input.css -o ./static/tailwind.css --watch
 
-tests:
+test:
 	@echo "🧪 Running tests with race detection..."
 	go test -race -v $(PKG)
 

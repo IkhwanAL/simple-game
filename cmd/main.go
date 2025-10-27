@@ -22,16 +22,6 @@ var (
 func main() {
 	world.InitLogger()
 
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, os.Interrupt)
-
-	go func() {
-		<-sigs
-		log.Print("Server Down")
-		// Snapshot Occur Here
-		os.Exit(1)
-	}()
-
 	agent := world.NewAgent(10, 10)
 	w.Agents = append(w.Agents, agent)
 	w.Grid[10][10].Type = world.AgentEn
@@ -41,6 +31,20 @@ func main() {
 			time.Sleep(1 * time.Second)
 			w.Tick()
 		}
+	}()
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt)
+
+	go func() {
+		<-sigs
+		log.Print("Server Down")
+
+		snapshot := w.Snapshot()
+
+		world.StoreQuickLog("snapshot.log", world.ToJSONBytes(snapshot))
+
+		os.Exit(1)
 	}()
 
 	http.HandleFunc("/", func(write http.ResponseWriter, r *http.Request) {

@@ -52,7 +52,10 @@ func main() {
 		defer mu.Unlock()
 
 		worldSnapshot := w.Snapshot()
-		ui.WorldView(&worldSnapshot).Render(r.Context(), write)
+		err := ui.WorldView(&worldSnapshot).Render(r.Context(), write)
+		if err != nil {
+			world.Logf("failed to return html page %v", err)
+		}
 	})
 
 	http.HandleFunc("/tick", func(write http.ResponseWriter, r *http.Request) {
@@ -61,7 +64,10 @@ func main() {
 
 		worldSnapshot := w.Snapshot()
 
-		ui.WorldView(&worldSnapshot).Render(r.Context(), write)
+		err := ui.WorldView(&worldSnapshot).Render(r.Context(), write)
+		if err != nil {
+			world.Logf("failed to return html page %v", err)
+		}
 	})
 
 	http.HandleFunc("/metrics", func(write http.ResponseWriter, r *http.Request) {
@@ -71,5 +77,8 @@ func main() {
 	})
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	http.ListenAndServe("127.0.0.1:8000", nil)
+	err := http.ListenAndServe("127.0.0.1:8000", nil)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }

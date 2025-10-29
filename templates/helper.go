@@ -1,6 +1,6 @@
 package ui
 
-import "github.com/ikhwanal/tinyworlds/world"
+import "github.com/ikhwanal/tinyworlds/internal/world"
 
 func CeilClass(c world.CellType) string {
 	switch c {

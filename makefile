@@ -16,7 +16,7 @@ generate:
 	templ generate
 	npx @tailwindcss/cli -i ./assets/input.css -o ./static/tailwind.css --watch
 
-test:
+tests:
 	@echo "🧪 Running tests with race detection..."
 	go test -race -v $(PKG)
 
@@ -28,4 +28,7 @@ fmt:
 	go fmt $(PKG)
 
 build:
+	@echo "Im Building A Go Binary"
+	templ generate
+	npx @tailwindcss/cli -i ./assets/input.css -o ./static/tailwind.css 
 	go build -race -o bin/$(BIN_NAME) cmd/server/main.go

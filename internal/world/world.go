@@ -30,7 +30,7 @@ type World struct {
 	mu         sync.RWMutex
 }
 
-type WorldViewData struct {
+type WorldSnapshot struct {
 	Grid   [Height][Width]Cell
 	Agents []*Agent
 }
@@ -74,11 +74,11 @@ func (w *World) Tick() {
 	}
 }
 
-func (w *World) Snapshot() WorldViewData {
+func (w *World) Snapshot() WorldSnapshot {
 	w.mu.RLock()
 	defer w.mu.RUnlock()
 
-	var copy WorldViewData
+	var copy WorldSnapshot
 
 	copy.Grid = w.Grid
 	copy.Agents = append([]*Agent(nil), w.Agents...)

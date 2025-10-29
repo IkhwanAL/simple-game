@@ -1,17 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
-	"runtime"
 	"sync"
 	"time"
 
-	"github.com/ikhwanal/tinyworlds/ui"
-	"github.com/ikhwanal/tinyworlds/world"
+	"github.com/ikhwanal/tinyworlds/internal/server"
+	"github.com/ikhwanal/tinyworlds/internal/world"
 )
 
 var (
@@ -47,38 +44,6 @@ func main() {
 		os.Exit(1)
 	}()
 
-	http.HandleFunc("/", func(write http.ResponseWriter, r *http.Request) {
-		mu.Lock()
-		defer mu.Unlock()
-
-		worldSnapshot := w.Snapshot()
-		err := ui.WorldView(&worldSnapshot).Render(r.Context(), write)
-		if err != nil {
-			world.Logf("failed to return html page %v", err)
-		}
-	})
-
-	http.HandleFunc("/tick", func(write http.ResponseWriter, r *http.Request) {
-		mu.Lock()
-		defer mu.Unlock()
-
-		worldSnapshot := w.Snapshot()
-
-		err := ui.WorldView(&worldSnapshot).Render(r.Context(), write)
-		if err != nil {
-			world.Logf("failed to return html page %v", err)
-		}
-	})
-
-	http.HandleFunc("/metrics", func(write http.ResponseWriter, r *http.Request) {
-		var m runtime.MemStats
-		runtime.ReadMemStats(&m)
-		fmt.Fprintf(write, "Alloc = %v KB\nNumGoroutine = %v\n", m.Alloc/1024, runtime.NumGoroutine())
-	})
-
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	err := http.ListenAndServe("127.0.0.1:8000", nil)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
+	svc := world.NewService(w)
+	server.Start(svc)
 }

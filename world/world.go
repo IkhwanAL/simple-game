@@ -24,9 +24,10 @@ type Cell struct {
 }
 
 type World struct {
-	Grid   [Height][Width]Cell
-	mu     sync.RWMutex
-	Agents []*Agent
+	AmountFood int
+	Grid       [Height][Width]Cell
+	Agents     []*Agent
+	mu         sync.RWMutex
 }
 
 type WorldViewData struct {
@@ -56,6 +57,7 @@ func (w *World) spawnFood() {
 
 	if w.Grid[y][x].Type == Empty {
 		w.Grid[y][x].Type = Food
+		w.AmountFood += 1
 	}
 }
 

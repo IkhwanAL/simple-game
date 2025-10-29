@@ -22,6 +22,7 @@ func (a *Agent) Act(w *World) {
 	if nx >= 0 && nx < Width && ny >= 0 && ny < Height {
 		if w.Grid[ny][nx].Type == Food {
 			w.Grid[ny][nx].Type = Empty
+			w.AmountFood -= 1
 		}
 
 		w.Grid[a.Y][a.X].Type = Empty

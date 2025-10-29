@@ -1,0 +1,15 @@
+# air.toml
+root = "."
+tmp_dir = "tmp"
+
+[build]
+# Air runs `cmd` when file changes are detected.
+cmd = "make build"
+bin = "bin/tinyworlds"  # Windows path — use .exe explicitly
+include_ext = ["go", "templ", "html", "css", "js"]
+exclude_dir = ["bin", "tmp", "node_modules", "static"]
+exclucde_regex = ["_templ.go", "_test.go"]
+
+
+[log]
+time = true

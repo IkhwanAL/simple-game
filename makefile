@@ -1,6 +1,12 @@
 APP_NAME = tinyworlds
 PKG = ./...
 
+ifeq ($(OS),Windows_NT)
+	BIN_NAME = $(APP_NAME).exe
+else
+	BIN_NAME = $(APP_NAME)
+endif
+
 run:
 	@echo "🏃 Running $(APP_NAME) with race detection..."
 	go run -race cmd/main.go
@@ -22,4 +28,4 @@ fmt:
 	go fmt $(PKG)
 
 build:
-	go build -o bin/$(APP_NAME) cmd/main.go
+	go build -race -o bin/$(BIN_NAME) cmd/main.go

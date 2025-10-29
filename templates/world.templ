@@ -14,7 +14,7 @@ templ WorldView(w *world.WorldSnapshot) {
 		<body
 			class="bg-gray-900 text-gray-100 flex flex-col items-center min-h-screen py-6"
 			hx-get="/tick"
-			hx-trigger="every 1s"
+			hx-trigger="every 500ms"
 			hx-swap="outerHTML"
 		>
 			<h1 class="text-3xl font-bold mb-4">🌍 TinyWorlds</h1>

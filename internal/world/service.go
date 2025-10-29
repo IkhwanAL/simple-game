@@ -1,6 +1,9 @@
 package world
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
 
 type Service struct {
 	mu    sync.Mutex
@@ -23,4 +26,17 @@ func (s *Service) Snapshot() WorldSnapshot {
 	defer s.mu.Unlock()
 
 	return s.world.Snapshot()
+}
+
+func (s *Service) StartTick(interval time.Duration) {
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for range ticker.C {
+			s.Tick()
+			Logf("Tick Completed") // Will Be Deleted After Clarification
+		}
+	}()
+
+	Logf("World is Starting")
 }

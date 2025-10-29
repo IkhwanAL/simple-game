@@ -31,7 +31,7 @@ func WorldView(w *world.WorldSnapshot) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html><head><meta charset=\"utf-8\"><title>TinyWorlds</title><script src=\"https://unpkg.com/htmx.org@2.0.8/dist/htmx.min.js\"></script><link href=\"/static/tailwind.css\" rel=\"stylesheet\"></head><body class=\"bg-gray-900 text-gray-100 flex flex-col items-center min-h-screen py-6\" hx-get=\"/tick\" hx-trigger=\"every 1s\" hx-swap=\"outerHTML\"><h1 class=\"text-3xl font-bold mb-4\">🌍 TinyWorlds</h1><table class=\"border-collapse border border-gray-700\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html><head><meta charset=\"utf-8\"><title>TinyWorlds</title><script src=\"https://unpkg.com/htmx.org@2.0.8/dist/htmx.min.js\"></script><link href=\"/static/tailwind.css\" rel=\"stylesheet\"></head><body class=\"bg-gray-900 text-gray-100 flex flex-col items-center min-h-screen py-6\" hx-get=\"/tick\" hx-trigger=\"every 500ms\" hx-swap=\"outerHTML\"><h1 class=\"text-3xl font-bold mb-4\">🌍 TinyWorlds</h1><table class=\"border-collapse border border-gray-700\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

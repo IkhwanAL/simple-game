@@ -14,7 +14,9 @@ func Router(svc *world.Service) http.Handler {
 
 	mux.HandleFunc("/", func(write http.ResponseWriter, r *http.Request) {
 		worldSnapshot := svc.Snapshot()
-		err := ui.WorldView(&worldSnapshot).Render(r.Context(), write)
+
+		worldComp := ui.WorldView(worldSnapshot)
+		err := ui.MainView(worldComp).Render(r.Context(), write)
 		if err != nil {
 			world.Logf("failed to return html page %v", err)
 		}
@@ -22,7 +24,7 @@ func Router(svc *world.Service) http.Handler {
 
 	mux.HandleFunc("/tick", func(write http.ResponseWriter, r *http.Request) {
 		worldSnapshot := svc.Snapshot()
-		err := ui.WorldView(&worldSnapshot).Render(r.Context(), write)
+		err := ui.WorldView(worldSnapshot).Render(r.Context(), write)
 		if err != nil {
 			world.Logf("failed to return html page %v", err)
 		}

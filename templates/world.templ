@@ -2,34 +2,63 @@ package ui
 
 import "github.com/ikhwanal/tinyworlds/internal/world"
 
-templ WorldView(w *world.WorldSnapshot) {
-	<!DOCTYPE html>
-	<html>
-		<head>
-			<meta charset="utf-8"/>
-			<title>TinyWorlds</title>
-			<script src="https://unpkg.com/htmx.org@2.0.8/dist/htmx.min.js"></script>
-			<link href="/static/tailwind.css" rel="stylesheet"/>
-		</head>
-		<body
-			class="bg-gray-900 text-gray-100 flex flex-col items-center min-h-screen py-6"
-			hx-get="/tick"
-			hx-trigger="every 500ms"
-			hx-swap="outerHTML"
+templ WorldViewV2(w *world.WorldSnapshot) {
+	<body
+		class="bg-gray-900 text-gray-100 flex flex-col items-center min-h-screen py-6"
+		hx-get="/tick"
+		hx-trigger="every 500ms"
+		hx-swap="outerHTML"
+	>
+		<h1 class="text-3xl font-bold mb-4">🌍 TinyWorlds</h1>
+		<table class="border-collapse border border-gray-700">
+			for _, row := range w.Grid {
+				<tr>
+					for _, cell := range row {
+						<td class={ CeilClass(cell.Type) }></td>
+					}
+				</tr>
+			}
+		</table>
+		<p class="mt-4 text-sm text-gray-400">
+			Agent moves every second & eats green food 🍎
+		</p>
+	</body>
+}
+
+templ CellView(cell world.CellType) {
+	<div
+		class={ "w-4", "h-4", GetColorCeilType(cell) }
+	></div>
+}
+
+templ AgentView(a world.Agent) {
+	<div
+		class="w-4 h-4 bg-red-500 absolute"
+		style={ GetAgentViewStyple(a) }
+	></div>
+}
+
+templ WorldView(s world.WorldSnapshot) {
+	<div
+		id="world"
+		class="relative"
+		hx-get="/tick"
+		hx-trigger="every 500ms"
+		hx-swap="outerHTML"
+	>
+		<!-- grid background -->
+		<div
+			class="grid gap-[2px] grid-cols-20"
 		>
-			<h1 class="text-3xl font-bold mb-4">🌍 TinyWorlds</h1>
-			<table class="border-collapse border border-gray-700">
-				for _, row := range w.Grid {
-					<tr>
-						for _, cell := range row {
-							<td class={ CeilClass(cell.Type) }></td>
-						}
-					</tr>
+			for _, row := range s.Grid {
+				for _, column := range row {
+					@CellView(column.Type)
 				}
-			</table>
-			<p class="mt-4 text-sm text-gray-400">
-				Agent moves every second & eats green food 🍎
-			</p>
-		</body>
-	</html>
+			}
+		</div>
+		<!-- agents on top -->
+		for _, a := range s.Agents {
+			@AgentView(a)
+		}
+	</div>
 }

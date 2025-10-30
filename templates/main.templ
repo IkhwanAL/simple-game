@@ -1,0 +1,22 @@
+package ui
+
+templ MainView(content templ.Component) {
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<meta charset="utf-8"/>
+			<title>TinyWorlds</title>
+			<script src="https://unpkg.com/htmx.org@2.0.8/dist/htmx.min.js"></script>
+			<link href="/static/tailwind.css" rel="stylesheet"/>
+		</head>
+		<body
+			class="bg-gray-900 text-gray-100 flex flex-col items-center min-h-screen py-6"
+		>
+			<h1 class="text-3xl font-bold mb-4">🌍 TinyWorlds</h1>
+			@content
+			<p class="mt-4 text-sm text-gray-400">
+				Agent moves every second & eats green food 🍎
+			</p>
+		</body>
+	</html>
+}

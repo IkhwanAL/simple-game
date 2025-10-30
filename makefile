@@ -16,7 +16,7 @@ run:
 generate:
 	@echo "🧩 Generating templ + tailwind..."
 	templ generate
-	npx @tailwindcss/cli -i ./assets/input.css -o ./static/tailwind.css --watch
+	npx @tailwindcss/cli -i ./assets/input.css -o ./static/tailwind.css
 
 tests:
 	@echo "🧪 Running tests with race detection..."

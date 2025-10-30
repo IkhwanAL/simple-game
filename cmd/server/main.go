@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/ikhwanal/tinyworlds/internal/server"
@@ -11,31 +14,38 @@ import (
 )
 
 var (
-	w = world.NewWorld()
+	w = world.NewWorld(20, 20)
 )
 
 func main() {
 	world.InitLogger()
 
-	agent := world.NewAgent(10, 10)
-	w.Agents = append(w.Agents, agent)
-	w.Grid[10][10].Type = world.AgentEn
-
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, os.Interrupt)
-
-	go func() {
-		<-sigs
-		log.Print("Server Down")
-
-		snapshot := w.Snapshot()
-
-		world.StoreQuickLog("log/snapshot.log", world.ToJSONBytes(snapshot))
-
-		os.Exit(1)
-	}()
-
 	svc := world.NewService(w)
 	svc.StartTick(500 * time.Millisecond)
-	server.Start(svc)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	srv := &http.Server{
+		Addr:    "127.0.0.1:8080",
+		Handler: server.Router(svc), // ✅ We expose a router instead of blocking
+	}
+
+	go func() {
+		log.Println("Tiny World Start")
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Http Error %s", err.Error())
+		}
+	}()
+
+	<-ctx.Done()
+	log.Println("Shutting Down...")
+	svc.Stop()
+
+	shutDownCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	srv.Shutdown(shutDownCtx)
+
+	log.Println("Complete Shutdown")
 }

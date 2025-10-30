@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"runtime"
 
@@ -10,8 +9,10 @@ import (
 	ui "github.com/ikhwanal/tinyworlds/templates"
 )
 
-func Start(svc *world.Service) {
-	http.HandleFunc("/", func(write http.ResponseWriter, r *http.Request) {
+func Router(svc *world.Service) http.Handler {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", func(write http.ResponseWriter, r *http.Request) {
 		worldSnapshot := svc.Snapshot()
 		err := ui.WorldView(&worldSnapshot).Render(r.Context(), write)
 		if err != nil {
@@ -19,7 +20,7 @@ func Start(svc *world.Service) {
 		}
 	})
 
-	http.HandleFunc("/tick", func(write http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/tick", func(write http.ResponseWriter, r *http.Request) {
 		worldSnapshot := svc.Snapshot()
 		err := ui.WorldView(&worldSnapshot).Render(r.Context(), write)
 		if err != nil {
@@ -27,17 +28,13 @@ func Start(svc *world.Service) {
 		}
 	})
 
-	http.HandleFunc("/metrics", func(write http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/metrics", func(write http.ResponseWriter, r *http.Request) {
 		var m runtime.MemStats
 		runtime.ReadMemStats(&m)
 		fmt.Fprintf(write, "Alloc = %v KB\nNumGoroutine = %v\n", m.Alloc/1024, runtime.NumGoroutine())
 	})
 
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	err := http.ListenAndServe("127.0.0.1:8000", nil)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
-	log.Println("TinyWorlds server running at :8000")
+	return mux
 }

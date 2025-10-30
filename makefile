@@ -9,6 +9,8 @@ endif
 
 run:
 	@echo "🏃 Running $(APP_NAME) with race detection..."
+	templ generate
+	npx @tailwindcss/cli -i ./assets/input.css -o ./static/tailwind.css
 	go run -race cmd/server/main.go
 
 generate:

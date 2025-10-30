@@ -1,42 +1,45 @@
 package world
 
 import (
-	"sync"
+	"log"
+
 	"time"
 )
 
 type Service struct {
-	mu    sync.Mutex
-	world *World
+	world    *World
+	stopChan chan struct{}
+	ticker   time.Ticker
 }
 
 func NewService(w *World) *Service {
-	return &Service{world: w}
-}
-
-func (s *Service) Tick() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	s.world.Tick()
+	return &Service{
+		stopChan: make(chan struct{}), // MUST initialize
+		world:    w,
+	}
 }
 
 func (s *Service) Snapshot() WorldSnapshot {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	return s.world.Snapshot()
 }
 
 func (s *Service) StartTick(interval time.Duration) {
+	s.ticker = *time.NewTicker(interval)
 	go func() {
-		ticker := time.NewTicker(interval)
-		defer ticker.Stop()
-		for range ticker.C {
-			s.Tick()
-			Logf("Tick Completed") // Will Be Deleted After Clarification
+		for {
+			select {
+			case <-s.ticker.C:
+				log.Println("Tick")
+				s.world.Tick()
+			case <-s.stopChan:
+				log.Println("The World Cease To Exists")
+				return
+			}
 		}
 	}()
+}
 
-	Logf("World is Starting")
+func (s *Service) Stop() {
+	log.Println("Calling Stop()")
+	close(s.stopChan)
 }

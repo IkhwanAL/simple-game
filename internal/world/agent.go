@@ -8,6 +8,7 @@ type Agent struct {
 	ID     int
 	X, Y   int
 	Energy int
+	IsDie  bool
 }
 
 func NewAgent(id, x, y, energy int) *Agent {

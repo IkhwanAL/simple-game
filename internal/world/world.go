@@ -3,6 +3,7 @@ package world
 import (
 	"math/rand/v2"
 	"sync"
+	"time"
 )
 
 type CellType int
@@ -93,7 +94,8 @@ func (w *World) Tick() {
 		if newAgent != nil {
 			w.Agents = append(w.Agents, newAgent)
 		}
-		// a.Die(w)
+
+		a.Die(w)
 	}
 
 	if rand.Float64() < 0.1 {
@@ -103,11 +105,23 @@ func (w *World) Tick() {
 }
 
 func (w *World) RemoveAgent(target *Agent) {
-	for i, a := range w.Agents {
-		if a.ID == target.ID {
-			w.Agents = append(w.Agents[:i], w.Agents[i+1:]...)
+	target.IsDie = true
+
+	go func(agentId int) {
+		time.Sleep(500 * time.Millisecond)
+
+		w.mu.Lock()
+		defer w.mu.Unlock()
+
+		for i, a := range w.Agents {
+			if a.ID == agentId {
+				w.Grid[a.Y][a.X].Type = Empty
+				w.Agents = append(w.Agents[:i], w.Agents[i+1:]...)
+			}
 		}
-	}
+
+	}(target.ID)
+
 }
 
 func (w *World) Snapshot() WorldSnapshot {

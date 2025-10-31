@@ -12,6 +12,8 @@ func CeilClass(c world.CellType) string {
 		return "w-5 h-5 border border-gray-800 bg-green-500"
 	case world.AgentEn:
 		return "w-5 h-5 border border-gray-800 bg-red-500"
+	case world.Obstacle:
+		return "w-5 h-5 border border-stone-900 bg-stone-800"
 	default:
 		return "w-5 h-5 border border-gray-800 bg-gray-900"
 	}
@@ -23,6 +25,8 @@ func GetColorCeilType(c world.CellType) string {
 		return "bg-green-400"
 	case world.AgentEn:
 		return "bg-red-500"
+	case world.Obstacle:
+		return "bg-stone-300"
 	default:
 		return "bg-white-900"
 	}

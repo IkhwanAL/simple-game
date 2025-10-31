@@ -2,29 +2,6 @@ package ui
 
 import "github.com/ikhwanal/tinyworlds/internal/world"
 
-templ WorldViewV2(w *world.WorldSnapshot) {
-	<body
-		class="bg-gray-900 text-gray-100 flex flex-col items-center min-h-screen py-6"
-		hx-get="/tick"
-		hx-trigger="every 500ms"
-		hx-swap="outerHTML"
-	>
-		<h1 class="text-3xl font-bold mb-4">🌍 TinyWorlds</h1>
-		<table class="border-collapse border border-gray-700">
-			for _, row := range w.Grid {
-				<tr>
-					for _, cell := range row {
-						<td class={ CeilClass(cell.Type) }></td>
-					}
-				</tr>
-			}
-		</table>
-		<p class="mt-4 text-sm text-gray-400">
-			Agent moves every second & eats green food 🍎
-		</p>
-	</body>
-}
-
 templ CellView(cell world.CellType) {
 	<div
 		class={ "w-4", "h-4", GetColorCeilType(cell) }

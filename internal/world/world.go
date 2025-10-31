@@ -8,12 +8,13 @@ import (
 
 type CellType int
 
-var StartingEnergy = 50
+var StartingEnergy = 20
 
 const (
 	Empty CellType = iota
 	Food
 	AgentEn
+	Obstacle
 )
 
 type Cell struct {
@@ -48,19 +49,46 @@ func NewWorld(width, height, starterAgent int) *World {
 		world.Grid[x] = make([]Cell, width)
 	}
 
+	randomTotalObstacles := rand.IntN(width*height) - 300
+	minTotalObstacles := randomTotalObstacles
+
+	minTotalObstacles = max(50, minTotalObstacles)
+
+	for range minTotalObstacles {
+		randX := rand.IntN(width - 1)
+		randY := rand.IntN(height - 1)
+
+		world.Grid[randY][randX].Type = Obstacle
+	}
+
 	// Spawn Minim Food
 	for range 20 {
 		world.spawnFood()
 	}
 
-	for x := range starterAgent {
-		randX := rand.IntN(width)
-		ranxY := rand.IntN(height)
+	freeCells := make([][2]int, 0)
 
-		agent := NewAgent(x, randX, ranxY, StartingEnergy)
+	for y := range height {
+		for x := range width {
+			location := world.Grid[y][x].Type
+
+			if location != Obstacle && location != Food {
+				freeCells = append(freeCells, [2]int{x, y})
+			}
+		}
+	}
+
+	rand.Shuffle(len(freeCells), func(i, j int) {
+		freeCells[i], freeCells[j] = freeCells[j], freeCells[i]
+	})
+
+	for i := range starterAgent {
+		location := freeCells[i]
+		x, y := location[0], location[1]
+		agent := NewAgent(i, x, y, StartingEnergy)
 
 		world.Agents = append(world.Agents, agent)
-		world.Grid[ranxY][randX].Type = AgentEn
+		world.Grid[y][x].Type = AgentEn
 	}
 
 	return world
@@ -87,7 +115,7 @@ func (w *World) Tick() {
 	w.TickCount++
 
 	for _, a := range w.Agents {
-		a.Move(w)
+		a.Move2(w)
 		a.Eat(w)
 
 		newAgent := a.Reproduction(a.ID, w.Width-1, w.Height-1)
@@ -98,7 +126,7 @@ func (w *World) Tick() {
 		a.Die(w, 600*time.Millisecond)
 	}
 
-	if rand.Float64() < 0.1 {
+	if w.TickCount%10 == 0 {
 		w.spawnFood()
 	}
 

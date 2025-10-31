@@ -31,34 +31,26 @@ templ CellView(cell world.CellType) {
 	></div>
 }
 
-templ AgentView(a world.Agent) {
-	<div
-		class="w-4 h-4 bg-red-500 absolute"
-		style={ GetAgentViewStyple(a) }
-	></div>
-}
-
 templ WorldView(s world.WorldSnapshot) {
 	<div
-		id="world"
-		class="relative"
+		class="relative inline-block"
 		hx-get="/tick"
 		hx-trigger="every 500ms"
 		hx-swap="outerHTML"
 	>
-		<!-- grid background -->
 		<div
-			class="grid gap-[2px] grid-cols-20"
+			id="world"
+			class="border-2 border-white mb-2"
 		>
-			for _, row := range s.Grid {
-				for _, column := range row {
-					@CellView(column.Type)
+			<div
+				class="grid gap-[2px] grid-cols-20"
+			>
+				for _, row := range s.Grid {
+					for _, column := range row {
+						@CellView(column.Type)
+					}
 				}
-			}
+			</div>
 		</div>
-		<!-- agents on top -->
-		for _, a := range s.Agents {
-			@AgentView(a)
-		}
 	</div>
 }

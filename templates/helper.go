@@ -28,9 +28,9 @@ func GetColorCeilType(c world.CellType) string {
 	}
 }
 
-func GetAgentViewStyple(a world.Agent) map[string]string {
+func GetAgentViewStyle(a world.Agent) map[string]string {
 	return map[string]string{
-		"left": strconv.Itoa(a.X*16) + "px;",
-		"top":  strconv.Itoa(a.Y*16) + "px;",
+		"left": strconv.Itoa(a.X*16) + "px",
+		"top":  strconv.Itoa(a.Y*16) + "px",
 	}
 }

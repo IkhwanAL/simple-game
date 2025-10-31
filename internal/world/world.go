@@ -35,7 +35,7 @@ type WorldSnapshot struct {
 	Agents []Agent
 }
 
-func NewWorld(width, height int) *World {
+func NewWorld(width, height, starterAgent int) *World {
 	world := &World{
 		Height: height,
 		Width:  width,
@@ -53,7 +53,7 @@ func NewWorld(width, height int) *World {
 		world.spawnFood()
 	}
 
-	for x := range 5 {
+	for x := range starterAgent {
 		randX := rand.IntN(width)
 		ranxY := rand.IntN(height)
 
@@ -95,7 +95,7 @@ func (w *World) Tick() {
 			w.Agents = append(w.Agents, newAgent)
 		}
 
-		a.Die(w)
+		a.Die(w, 600*time.Millisecond)
 	}
 
 	if rand.Float64() < 0.1 {
@@ -104,24 +104,27 @@ func (w *World) Tick() {
 
 }
 
-func (w *World) RemoveAgent(target *Agent) {
+func (w *World) RemoveAgent(target *Agent, duration time.Duration) {
 	target.IsDie = true
 
 	go func(agentId int) {
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(duration)
 
 		w.mu.Lock()
 		defer w.mu.Unlock()
 
-		for i, a := range w.Agents {
-			if a.ID == agentId {
-				w.Grid[a.Y][a.X].Type = Empty
-				w.Agents = append(w.Agents[:i], w.Agents[i+1:]...)
-			}
-		}
+		w.RemoveAgentNow(agentId)
 
 	}(target.ID)
+}
 
+func (w *World) RemoveAgentNow(agentId int) {
+	for i, a := range w.Agents {
+		if a.ID == agentId {
+			w.Grid[a.Y][a.X].Type = Empty
+			w.Agents = append(w.Agents[:i], w.Agents[i+1:]...)
+		}
+	}
 }
 
 func (w *World) Snapshot() WorldSnapshot {

@@ -2,6 +2,7 @@ package world
 
 import (
 	"math/rand/v2"
+	"time"
 )
 
 type Agent struct {
@@ -56,8 +57,8 @@ func (a *Agent) Reproduction(ID, worldWidth, worldHeight int) *Agent {
 	return nil
 }
 
-func (a *Agent) Die(w *World) {
+func (a *Agent) Die(w *World, dieDuration time.Duration) {
 	if a.Energy == 0 {
-		w.RemoveAgent(a)
+		w.RemoveAgent(a, dieDuration)
 	}
 }

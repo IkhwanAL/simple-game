@@ -43,6 +43,20 @@ func (a *Agent) Move(w *World) {
 	}
 }
 
-func (a Agent) Copy() Agent {
-	return a
+func (a *Agent) Reproduction(ID, worldWidth, worldHeight int) *Agent {
+	thresholdEnergy := 10
+
+	if a.Energy < thresholdEnergy {
+		nx := min(a.X+1, worldWidth)
+		ny := min(a.Y+1, worldHeight)
+		return NewAgent(ID+1, nx, ny, StartingEnergy)
+	}
+
+	return nil
+}
+
+func (a *Agent) Die(w *World) {
+	if a.Energy == 0 {
+		w.RemoveAgent(a)
+	}
 }

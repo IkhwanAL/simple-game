@@ -1,12 +1,13 @@
 package world
 
 import (
-	"log"
 	"math/rand/v2"
 	"sync"
 )
 
 type CellType int
+
+var StartingEnergy = 50
 
 const (
 	Empty CellType = iota
@@ -55,7 +56,7 @@ func NewWorld(width, height int) *World {
 		randX := rand.IntN(width)
 		ranxY := rand.IntN(height)
 
-		agent := NewAgent(x, randX, ranxY, 50)
+		agent := NewAgent(x, randX, ranxY, StartingEnergy)
 
 		world.Agents = append(world.Agents, agent)
 		world.Grid[ranxY][randX].Type = AgentEn
@@ -78,9 +79,7 @@ func (w *World) spawnFood() {
 }
 
 func (w *World) Tick() {
-	log.Println("Tick Waiting To Lock")
 	w.mu.Lock()
-	log.Println("Tick is Locking")
 
 	defer w.mu.Unlock()
 
@@ -89,23 +88,33 @@ func (w *World) Tick() {
 	for _, a := range w.Agents {
 		a.Move(w)
 		a.Eat(w)
+
+		newAgent := a.Reproduction(a.ID, w.Width-1, w.Height-1)
+		if newAgent != nil {
+			w.Agents = append(w.Agents, newAgent)
+		}
+		// a.Die(w)
 	}
 
 	if rand.Float64() < 0.1 {
 		w.spawnFood()
 	}
 
-	log.Println("Tick is Unlock")
+}
+
+func (w *World) RemoveAgent(target *Agent) {
+	for i, a := range w.Agents {
+		if a.ID == target.ID {
+			w.Agents = append(w.Agents[:i], w.Agents[i+1:]...)
+		}
+	}
 }
 
 func (w *World) Snapshot() WorldSnapshot {
 
-	log.Println("Snapshot Waiting To RLock")
 	w.mu.RLock()
-	log.Println("Snapshot is RLocking")
 	defer w.mu.RUnlock()
 
-	log.Print("Snap")
 	var worldCopy WorldSnapshot
 
 	worldCopy.Grid = make([][]Cell, len(w.Grid))
@@ -120,6 +129,5 @@ func (w *World) Snapshot() WorldSnapshot {
 		worldCopy.Agents[i] = *a // copy by value, not by pointer
 	}
 
-	log.Println("Snapshot is RUnlock")
 	return worldCopy
 }

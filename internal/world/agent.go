@@ -30,7 +30,7 @@ func (a *Agent) Eat(w *World) {
 	if w.Grid[a.Y][a.X].Type == Food {
 		w.Grid[a.Y][a.X].Type = Empty
 		w.AmountFood -= 1
-		a.Energy += 5
+		a.Energy += 10
 	}
 }
 
@@ -71,63 +71,7 @@ func (a *Agent) NextMove(w *World) ([2]int, error) {
 	return [2]int{}, errors.New("trapped in void")
 }
 
-func (a *Agent) CheckSurround(w *World) ([2]int, error) {
-	// x, y
-	leftTop := [2]int{-1, -1}
-	middleTop := [2]int{0, -1}
-	rightTop := [2]int{1, -1}
-
-	leftMiddle := [2]int{-1, 0}
-	rightMiddle := [2]int{1, 0}
-
-	leftBottom := [2]int{-1, 1}
-	middleBottom := [2]int{0, 1}
-	rightBottom := [2]int{1, 1}
-
-	surround := [][2]int{
-		leftTop,
-		middleTop,
-		rightTop,
-		leftMiddle,
-		rightMiddle,
-		leftBottom,
-		middleBottom,
-		rightBottom,
-	}
-
-	freeLocation := make([][2]int, 0)
-
-	for _, mark := range surround {
-		x, y := mark[0], mark[1]
-
-		nx := a.X + x
-		ny := a.Y + y
-
-		if (nx >= 0 && nx < w.Width) && (ny >= 0 && ny < w.Height) {
-			location := w.Grid[ny][nx].Type
-
-			if location == Obstacle || location == AgentEn {
-				continue
-			}
-
-			freeLocation = append(freeLocation, mark)
-		}
-
-	}
-
-	if len(freeLocation) == 0 {
-		return [2]int{}, errors.New("they trapped")
-	}
-
-	rand.Shuffle(len(freeLocation), func(i, j int) {
-		freeLocation[i], freeLocation[j] = freeLocation[j], freeLocation[i]
-	})
-
-	nextLocation := [2]int{a.X + freeLocation[0][0], a.Y + freeLocation[0][1]}
-	return nextLocation, nil
-}
-
-func (a *Agent) Move2(w *World) {
+func (a *Agent) Move(w *World) {
 	nextMove, err := a.NextMove(w)
 	if err != nil {
 		Logf("Error When Agent Try To Move %v", err)
@@ -147,33 +91,38 @@ func (a *Agent) Move2(w *World) {
 
 }
 
-func (a *Agent) Move(w *World) {
-	dx := rand.IntN(3) - 1
-	dy := rand.IntN(3) - 1
+func (a *Agent) Reproduction(ID int, w *World) *Agent {
+	thresholdEnergy := 8
 
-	nx := a.X + dx
-	ny := a.Y + dy
+	if a.Energy > thresholdEnergy {
+		directions := [][2]int{
+			{0, -1},  // up
+			{1, -1},  // up-right
+			{1, 0},   // right
+			{1, 1},   // down-right
+			{0, 1},   // down
+			{-1, 1},  // down-left
+			{-1, 0},  // left
+			{-1, -1}, // up-left
+		}
 
-	if (nx > 0 && nx < w.Width) && (ny > 0 && ny < w.Height) {
+		for _, d := range directions {
+			nx := a.X + d[0]
+			ny := a.Y + d[1]
 
-		w.Grid[a.Y][a.X].Type = Empty
+			if nx < 0 || nx >= w.Width || ny < 0 || ny >= w.Height {
+				continue
+			}
 
-		a.X = nx
-		a.Y = ny
+			landmark := w.Grid[ny][nx].Type
 
-		a.Energy--
+			if landmark == Obstacle || landmark == AgentEn {
+				continue
+			}
 
-		w.Grid[ny][nx].Type = AgentEn
-	}
-}
+			return NewAgent(ID+1, nx, ny, StartingEnergy)
+		}
 
-func (a *Agent) Reproduction(ID, worldWidth, worldHeight int) *Agent {
-	thresholdEnergy := 4
-
-	if a.Energy < thresholdEnergy {
-		nx := min(a.X+1, worldWidth)
-		ny := min(a.Y+1, worldHeight)
-		return NewAgent(ID+1, nx, ny, StartingEnergy)
 	}
 
 	return nil

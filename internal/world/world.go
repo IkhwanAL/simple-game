@@ -8,7 +8,7 @@ import (
 
 type CellType int
 
-var StartingEnergy = 20
+var StartingEnergy = 10
 
 const (
 	Empty CellType = iota
@@ -62,7 +62,7 @@ func NewWorld(width, height, starterAgent int) *World {
 	}
 
 	// Spawn Minim Food
-	for range 20 {
+	for range width * height / 5 {
 		world.spawnFood()
 	}
 
@@ -115,10 +115,10 @@ func (w *World) Tick() {
 	w.TickCount++
 
 	for _, a := range w.Agents {
-		a.Move2(w)
+		a.Move(w)
 		a.Eat(w)
 
-		newAgent := a.Reproduction(a.ID, w.Width-1, w.Height-1)
+		newAgent := a.Reproduction(a.ID, w)
 		if newAgent != nil {
 			w.Agents = append(w.Agents, newAgent)
 		}

@@ -8,7 +8,7 @@ import (
 
 type CellType int
 
-var StartingEnergy = 10
+var StartingEnergy = 15
 
 const (
 	Empty CellType = iota
@@ -26,6 +26,8 @@ type World struct {
 	Height     int
 	AmountFood int
 	TickCount  int
+	DeathCount int
+	BornCount  int
 	Grid       [][]Cell
 	Agents     []*Agent
 	mu         sync.RWMutex
@@ -37,6 +39,9 @@ type WorldSnapshot struct {
 	Tick       int
 	AvgEnergy  float64
 	AmountFood int
+	DeathCount int
+	BornCount  int
+	AgentCount int
 }
 
 func NewWorld(width, height, starterAgent int) *World {
@@ -94,6 +99,8 @@ func NewWorld(width, height, starterAgent int) *World {
 		world.Grid[y][x].Type = AgentEn
 	}
 
+	world.BornCount = starterAgent
+
 	return world
 }
 
@@ -123,20 +130,22 @@ func (w *World) Tick() {
 
 		newAgent := a.Reproduction(a.ID, w)
 		if newAgent != nil {
+			w.BornCount++
 			w.Agents = append(w.Agents, newAgent)
 		}
 
 		a.Die(w, 600*time.Millisecond)
 	}
 
-	if w.TickCount%10 == 0 {
+	growth := rand.IntN(1000)
+	if growth < 30 {
 		w.spawnFood()
 	}
-
 }
 
 func (w *World) RemoveAgent(target *Agent, duration time.Duration) {
 	target.IsDie = true
+	w.DeathCount++
 
 	go func(agentId int) {
 		time.Sleep(duration)
@@ -177,6 +186,7 @@ func (w *World) Snapshot() WorldSnapshot {
 	for i, a := range w.Agents {
 		worldCopy.Agents[i] = *a // copy by value, not by pointer
 		totalEnergy += a.Energy
+		worldCopy.AgentCount++
 	}
 
 	avgEnergy := 0.0
@@ -187,6 +197,8 @@ func (w *World) Snapshot() WorldSnapshot {
 	worldCopy.AvgEnergy = avgEnergy
 	worldCopy.Tick = w.TickCount
 	worldCopy.AmountFood = w.AmountFood
+	worldCopy.BornCount = w.BornCount
+	worldCopy.DeathCount = w.DeathCount
 
 	return worldCopy
 }

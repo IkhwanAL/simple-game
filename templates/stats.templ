@@ -6,7 +6,10 @@ import "fmt"
 templ StatsView(s world.WorldSnapshot) {
 	<div class="bg-gray-800 text-white p-3 rounded-md text-sm space-y-1 w-40">
 		<div>Tick: { s.Tick }</div>
-		<div>Agents: { len(s.Agents) }</div>
+		<div>Agents: { s.AgentCount }</div>
 		<div>Avg Energy: { fmt.Sprintf("%.2f", s.AvgEnergy) }</div>
+		<div>Death Count: { s.DeathCount }</div>
+		<div>Born Count: { s.BornCount }</div>
+		<div>Food Count: { s.AmountFood }</div>
 	</div>
 }

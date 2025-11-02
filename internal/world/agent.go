@@ -92,9 +92,11 @@ func (a *Agent) Move(w *World) {
 }
 
 func (a *Agent) Reproduction(ID int, w *World) *Agent {
-	thresholdEnergy := 8
+	reproductionCost := 5
+	thresholdEnergy := 10
 
-	if a.Energy > thresholdEnergy {
+	if a.Energy >= thresholdEnergy {
+		a.Energy -= reproductionCost
 		directions := [][2]int{
 			{0, -1},  // up
 			{1, -1},  // up-right

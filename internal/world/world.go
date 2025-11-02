@@ -32,8 +32,11 @@ type World struct {
 }
 
 type WorldSnapshot struct {
-	Grid   [][]Cell
-	Agents []Agent
+	Grid       [][]Cell
+	Agents     []Agent
+	Tick       int
+	AvgEnergy  float64
+	AmountFood int
 }
 
 func NewWorld(width, height, starterAgent int) *World {
@@ -169,10 +172,21 @@ func (w *World) Snapshot() WorldSnapshot {
 		worldCopy.Grid[i] = row
 	}
 
+	totalEnergy := 0
 	worldCopy.Agents = make([]Agent, len(w.Agents))
 	for i, a := range w.Agents {
 		worldCopy.Agents[i] = *a // copy by value, not by pointer
+		totalEnergy += a.Energy
 	}
+
+	avgEnergy := 0.0
+	if len(w.Agents) > 0 {
+		avgEnergy = float64(totalEnergy) / float64(len(w.Agents))
+	}
+
+	worldCopy.AvgEnergy = avgEnergy
+	worldCopy.Tick = w.TickCount
+	worldCopy.AmountFood = w.AmountFood
 
 	return worldCopy
 }

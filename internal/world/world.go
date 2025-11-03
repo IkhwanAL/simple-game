@@ -1,6 +1,7 @@
 package world
 
 import (
+	"container/list"
 	"math/rand/v2"
 	"sync"
 	"time"
@@ -125,20 +126,34 @@ func (w *World) Tick() {
 	w.TickCount++
 
 	for _, a := range w.Agents {
-		a.Move(w)
+		prevX, prevY := a.X, a.Y
+		nextX, nextY, found := w.FindTheClosestFood(a.X, a.Y)
+
+		if found {
+			a.ReduceEnergy()
+		} else {
+			nextX, nextY = a.MoveAiminglessly(w)
+		}
+
+		a.SetAgentPosition(nextX, nextY)
+
 		a.Eat(w)
+
+		a.Die(w, 500*time.Millisecond)
+
+		// Reflect Into World Map
+		w.Grid[prevY][prevX].Type = Empty
+		w.Grid[nextY][nextX].Type = AgentEn
 
 		newAgent := a.Reproduction(a.ID, w)
 		if newAgent != nil {
 			w.BornCount++
 			w.Agents = append(w.Agents, newAgent)
 		}
-
-		a.Die(w, 600*time.Millisecond)
 	}
 
 	growth := rand.IntN(1000)
-	if growth < 30 {
+	if growth < 25 {
 		w.spawnFood()
 	}
 }
@@ -147,24 +162,21 @@ func (w *World) RemoveAgent(target *Agent, duration time.Duration) {
 	target.IsDie = true
 	w.DeathCount++
 
-	go func(agentId int) {
+	id := target.ID
+	for i, a := range w.Agents {
+		if a.ID == id {
+			w.Agents = append(w.Agents[:i], w.Agents[i+1:]...)
+			break
+		}
+	}
+
+	go func(x, y int) {
 		time.Sleep(duration)
 
 		w.mu.Lock()
 		defer w.mu.Unlock()
-
-		w.RemoveAgentNow(agentId)
-
-	}(target.ID)
-}
-
-func (w *World) RemoveAgentNow(agentId int) {
-	for i, a := range w.Agents {
-		if a.ID == agentId {
-			w.Grid[a.Y][a.X].Type = Empty
-			w.Agents = append(w.Agents[:i], w.Agents[i+1:]...)
-		}
-	}
+		w.Grid[y][x].Type = Empty
+	}(target.X, target.Y)
 }
 
 func (w *World) Snapshot() WorldSnapshot {
@@ -201,4 +213,57 @@ func (w *World) Snapshot() WorldSnapshot {
 	worldCopy.DeathCount = w.DeathCount
 
 	return worldCopy
+}
+
+type Node struct {
+	x, y int
+}
+
+func (w *World) FindTheClosestFood(currentX, currentY int) (int, int, bool) {
+	visited := make([][]bool, w.Height)
+	for i := range w.Height {
+		visited[i] = make([]bool, w.Width)
+	}
+
+	q := list.New()
+	q.PushBack(Node{x: currentX, y: currentY})
+	visited[currentY][currentX] = true
+
+	parent := map[[2]int][2]int{}
+
+	for q.Len() > 0 {
+		cur := q.Remove(q.Front()).(Node)
+
+		if (cur.x != currentX || cur.y != currentY) && w.Grid[cur.y][cur.x].Type == Food {
+			pathX, pathY := cur.x, cur.y
+			for parent[[2]int{pathX, pathY}] != [2]int{currentX, currentY} {
+				pxpy := parent[[2]int{pathX, pathY}]
+				pathX, pathY = pxpy[0], pxpy[1]
+			}
+
+			return pathX, pathY, true
+		}
+
+		for _, d := range DIRS {
+			nx, ny := currentX+d[0], currentY+d[1]
+
+			if nx < 0 || nx >= w.Width || ny < 0 || ny >= w.Height {
+				continue
+			}
+
+			if visited[ny][nx] == true {
+				continue
+			}
+
+			if w.Grid[ny][nx].Type == Obstacle {
+				continue
+			}
+
+			visited[ny][nx] = true
+			parent[[2]int{nx, ny}] = [2]int{cur.x, cur.y}
+			q.PushBack(Node{x: nx, y: ny})
+		}
+	}
+
+	return currentX, currentY, false
 }

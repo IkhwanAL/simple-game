@@ -11,6 +11,10 @@ var DOWN = [2]int{0, 1}
 var LEFT = [2]int{-1, 0}
 var RIGHT = [2]int{1, 0}
 
+var DIRS = [4][2]int{
+	UP, DOWN, LEFT, RIGHT,
+}
+
 type Agent struct {
 	ID     int
 	X, Y   int
@@ -28,7 +32,6 @@ func NewAgent(id, x, y, energy int) *Agent {
 
 func (a *Agent) Eat(w *World) {
 	if w.Grid[a.Y][a.X].Type == Food {
-		w.Grid[a.Y][a.X].Type = Empty
 		w.AmountFood -= 1
 		a.Energy += 10
 	}
@@ -71,31 +74,34 @@ func (a *Agent) NextMove(w *World) ([2]int, error) {
 	return [2]int{}, errors.New("trapped in void")
 }
 
-func (a *Agent) Move(w *World) {
+func (a *Agent) MoveAiminglessly(w *World) (int, int) {
 	nextMove, err := a.NextMove(w)
 	if err != nil {
 		Logf("Error When Agent Try To Move %v", err)
-		return
+		return a.X, a.Y
 	}
-
-	w.Grid[a.Y][a.X].Type = Empty
-
 	nx, ny := nextMove[0], nextMove[1]
+	a.ReduceEnergy()
+	return nx, ny
+}
 
-	a.X = nx
-	a.Y = ny
-
+func (a *Agent) ReduceEnergy() {
 	a.Energy--
+}
 
-	w.Grid[ny][nx].Type = AgentEn
-
+// Set Agent Position But Not Reflect it Into World Map
+func (a *Agent) SetAgentPosition(px, py int) {
+	a.X = px
+	a.Y = py
 }
 
 func (a *Agent) Reproduction(ID int, w *World) *Agent {
 	reproductionCost := 5
 	thresholdEnergy := 10
 
-	if a.Energy >= thresholdEnergy {
+	chance := rand.IntN(1000)
+
+	if chance < 20 && a.Energy >= thresholdEnergy {
 		a.Energy -= reproductionCost
 		directions := [][2]int{
 			{0, -1},  // up
@@ -118,7 +124,7 @@ func (a *Agent) Reproduction(ID int, w *World) *Agent {
 
 			landmark := w.Grid[ny][nx].Type
 
-			if landmark == Obstacle || landmark == AgentEn {
+			if landmark == Obstacle || landmark == AgentEn || landmark == Food {
 				continue
 			}
 

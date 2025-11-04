@@ -49,6 +49,13 @@ func (s *Service) SpawnFood() {
 }
 
 func (s *Service) StartTick(interval time.Duration) {
+	if s.ticker != nil {
+		s.ticker.Stop()
+		for len(s.ticker.C) > 0 {
+			<-s.ticker.C // drain zombie ticks
+		}
+	}
+
 	s.Interval = interval
 	s.ticker = time.NewTicker(interval)
 
@@ -56,6 +63,8 @@ func (s *Service) StartTick(interval time.Duration) {
 		for {
 			select {
 			case <-s.ticker.C:
+				// fmt.Println("Ticker Called", time.Now().Format(time.RFC3339Nano), "svc=", s)
+				// fmt.Println("Ticker Called", s.ticker, time.Now())
 				if s.paused.Load() {
 					continue
 				}

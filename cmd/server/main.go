@@ -18,6 +18,7 @@ var (
 )
 
 func main() {
+
 	world.InitLogger()
 
 	svc := world.NewService(w)

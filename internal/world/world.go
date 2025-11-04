@@ -143,9 +143,13 @@ func (w *World) Tick() {
 		} else {
 			nextX, nextY = a.MoveAiminglessly(w)
 		}
+		// fmt.Printf("CX: %d, CY: %d, NX: %d, NY: %d \n", a.X, a.Y, nextX, nextY)
 		a.SetAgentPosition(nextX, nextY)
+
 		if len(a.Path) > 0 {
+			// fmt.Printf("Before %v \n", a.Path)
 			a.Path = a.Path[1:]
+			// fmt.Printf("After %v\n", a.Path)
 		}
 
 		a.Eat(w)
@@ -156,17 +160,19 @@ func (w *World) Tick() {
 		w.Grid[prevY][prevX].Type = Empty
 		w.Grid[nextY][nextX].Type = AgentEn
 
-		// newAgent := a.Reproduction(a.ID, w)
-		// if newAgent != nil {
-		// 	w.BornCount++
-		// 	w.Agents = append(w.Agents, newAgent)
-		// }
+		newAgent := a.Reproduction(a.ID, w)
+		if newAgent != nil {
+			w.BornCount++
+			w.Agents = append(w.Agents, newAgent)
+		}
 	}
 
 	growth := rand.IntN(1000)
 	if growth < 25 {
 		w.spawnFood()
 	}
+
+	fmt.Println("\tTick Completed")
 }
 
 func (w *World) RemoveAgent(target *Agent, duration time.Duration) {
@@ -191,7 +197,6 @@ func (w *World) RemoveAgent(target *Agent, duration time.Duration) {
 }
 
 func (w *World) Snapshot() WorldSnapshot {
-
 	w.mu.RLock()
 	defer w.mu.RUnlock()
 
@@ -229,7 +234,6 @@ func (w *World) Snapshot() WorldSnapshot {
 		for _, p := range a.Path {
 			worldCopy.PathPoints[[2]int{p.x, p.y}] = true
 		}
-		fmt.Printf("Agent %d, Agent Location X: %d, Y:  %d Path %v\n", a.ID, a.X, a.Y, a.Path)
 	}
 
 	return worldCopy

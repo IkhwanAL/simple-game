@@ -54,7 +54,7 @@ func CellView(cell world.CellType, hasPath bool) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if hasPath == true {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"w-1 h-1 bg-red-500 rounded-full\"></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"w-1 h-1 bg-amber-300 rounded-full\"></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

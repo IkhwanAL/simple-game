@@ -78,7 +78,7 @@ func WorldView(s world.WorldSnapshot) templ.Component {
 			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"relative inline-block\" hx-get=\"/tick\" hx-trigger=\"every 500ms\" hx-swap=\"outerHTML\"><div id=\"world\" class=\"border-2 border-white mb-2\"><div class=\"grid gap-[2px] grid-cols-20\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"relative inline-block\" hx-get=\"/tick\" hx-trigger=\"every 250ms\" hx-swap=\"outerHTML\"><div id=\"world\" class=\"border-2 border-white mb-2\"><div class=\"grid gap-[2px] grid-cols-20\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

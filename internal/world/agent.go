@@ -33,7 +33,7 @@ func NewAgent(id, x, y, energy int) *Agent {
 func (a *Agent) Eat(w *World) {
 	if w.Grid[a.Y][a.X].Type == Food {
 		w.AmountFood -= 1
-		a.Energy += 10
+		a.Energy += EnergyFoodGain
 	}
 }
 
@@ -86,7 +86,7 @@ func (a *Agent) MoveAiminglessly(w *World) (int, int) {
 }
 
 func (a *Agent) ReduceEnergy() {
-	a.Energy--
+	a.Energy -= EnergyPerTick
 }
 
 // Set Agent Position But Not Reflect it Into World Map
@@ -96,13 +96,10 @@ func (a *Agent) SetAgentPosition(px, py int) {
 }
 
 func (a *Agent) Reproduction(ID int, w *World) *Agent {
-	reproductionCost := 5
-	thresholdEnergy := 10
-
 	chance := rand.IntN(1000)
 
-	if chance < 20 && a.Energy >= thresholdEnergy {
-		a.Energy -= reproductionCost
+	if chance < 20 && a.Energy >= EnergyReproduceThreshold {
+		a.Energy -= EnergyReproduceCost
 		directions := [][2]int{
 			{0, -1},  // up
 			{1, -1},  // up-right

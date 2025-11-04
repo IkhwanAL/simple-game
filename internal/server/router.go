@@ -36,6 +36,8 @@ func Router(svc *world.Service) http.Handler {
 		fmt.Fprintf(write, "Alloc = %v KB\nNumGoroutine = %v\n", m.Alloc/1024, runtime.NumGoroutine())
 	})
 
+	ControlRouter(mux, svc)
+
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	return mux

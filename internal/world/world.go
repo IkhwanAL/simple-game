@@ -18,6 +18,13 @@ const (
 	Obstacle
 )
 
+const (
+	EnergyPerTick            = 1
+	EnergyFoodGain           = 10
+	EnergyReproduceThreshold = 12
+	EnergyReproduceCost      = 5
+)
+
 type Cell struct {
 	Type CellType
 }

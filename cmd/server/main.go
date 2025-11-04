@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	w = world.NewWorld(20, 20, 5)
+	w = world.NewWorld(20, 20, 1)
 )
 
 func main() {

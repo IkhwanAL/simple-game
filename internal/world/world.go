@@ -2,6 +2,7 @@ package world
 
 import (
 	"container/list"
+	"fmt"
 	"math/rand/v2"
 	"sync"
 	"time"
@@ -50,6 +51,7 @@ type WorldSnapshot struct {
 	DeathCount int
 	BornCount  int
 	AgentCount int
+	PathPoints map[[2]int]bool
 }
 
 func NewWorld(width, height, starterAgent int) *World {
@@ -134,15 +136,17 @@ func (w *World) Tick() {
 
 	for _, a := range w.Agents {
 		prevX, prevY := a.X, a.Y
-		nextX, nextY, found := w.FindTheClosestFood(a.X, a.Y)
+		nextX, nextY, found := w.FindTheClosestFood(a.X, a.Y, a)
 
 		if found {
 			a.ReduceEnergy()
 		} else {
 			nextX, nextY = a.MoveAiminglessly(w)
 		}
-
 		a.SetAgentPosition(nextX, nextY)
+		if len(a.Path) > 0 {
+			a.Path = a.Path[1:]
+		}
 
 		a.Eat(w)
 
@@ -152,11 +156,11 @@ func (w *World) Tick() {
 		w.Grid[prevY][prevX].Type = Empty
 		w.Grid[nextY][nextX].Type = AgentEn
 
-		newAgent := a.Reproduction(a.ID, w)
-		if newAgent != nil {
-			w.BornCount++
-			w.Agents = append(w.Agents, newAgent)
-		}
+		// newAgent := a.Reproduction(a.ID, w)
+		// if newAgent != nil {
+		// 	w.BornCount++
+		// 	w.Agents = append(w.Agents, newAgent)
+		// }
 	}
 
 	growth := rand.IntN(1000)
@@ -219,40 +223,45 @@ func (w *World) Snapshot() WorldSnapshot {
 	worldCopy.BornCount = w.BornCount
 	worldCopy.DeathCount = w.DeathCount
 
+	worldCopy.PathPoints = make(map[[2]int]bool)
+
+	for _, a := range worldCopy.Agents {
+		for _, p := range a.Path {
+			worldCopy.PathPoints[[2]int{p.x, p.y}] = true
+		}
+		fmt.Printf("Agent %d, Agent Location X: %d, Y:  %d Path %v\n", a.ID, a.X, a.Y, a.Path)
+	}
+
 	return worldCopy
 }
 
-type Node struct {
+type Chord struct {
 	x, y int
 }
 
-func (w *World) FindTheClosestFood(currentX, currentY int) (int, int, bool) {
+func (w *World) FindTheClosestFood(currentX, currentY int, a *Agent) (int, int, bool) {
 	visited := make([][]bool, w.Height)
-	for i := range w.Height {
+	for i := range visited {
 		visited[i] = make([]bool, w.Width)
 	}
 
 	q := list.New()
-	q.PushBack(Node{x: currentX, y: currentY})
+	q.PushBack(Chord{x: currentX, y: currentY})
 	visited[currentY][currentX] = true
 
 	parent := map[[2]int][2]int{}
+	var target *Chord
 
 	for q.Len() > 0 {
-		cur := q.Remove(q.Front()).(Node)
+		cur := q.Remove(q.Front()).(Chord)
 
 		if (cur.x != currentX || cur.y != currentY) && w.Grid[cur.y][cur.x].Type == Food {
-			pathX, pathY := cur.x, cur.y
-			for parent[[2]int{pathX, pathY}] != [2]int{currentX, currentY} {
-				pxpy := parent[[2]int{pathX, pathY}]
-				pathX, pathY = pxpy[0], pxpy[1]
-			}
-
-			return pathX, pathY, true
+			target = &cur
+			break
 		}
 
 		for _, d := range DIRS {
-			nx, ny := currentX+d[0], currentY+d[1]
+			nx, ny := cur.x+d[0], cur.y+d[1]
 
 			if nx < 0 || nx >= w.Width || ny < 0 || ny >= w.Height {
 				continue
@@ -268,9 +277,25 @@ func (w *World) FindTheClosestFood(currentX, currentY int) (int, int, bool) {
 
 			visited[ny][nx] = true
 			parent[[2]int{nx, ny}] = [2]int{cur.x, cur.y}
-			q.PushBack(Node{x: nx, y: ny})
+			q.PushBack(Chord{x: nx, y: ny})
 		}
 	}
 
-	return currentX, currentY, false
+	if target == nil {
+		return currentX, currentY, false
+	}
+
+	px, py := target.x, target.y
+	for !(px == currentX && py == currentY) {
+		a.Path = append(a.Path, Chord{px, py})
+		pxpy := parent[[2]int{px, py}]
+		px, py = pxpy[0], pxpy[1]
+	}
+
+	// reverse path so it's from agent → food
+	for i := 0; i < len(a.Path)/2; i++ {
+		a.Path[i], a.Path[len(a.Path)-1-i] = a.Path[len(a.Path)-1-i], a.Path[i]
+	}
+
+	return a.Path[0].x, a.Path[0].y, true
 }

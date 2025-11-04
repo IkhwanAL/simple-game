@@ -22,7 +22,7 @@ func Router(svc *world.Service) http.Handler {
 		}
 	})
 
-	mux.HandleFunc("/tick", func(write http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/snapshot", func(write http.ResponseWriter, r *http.Request) {
 		worldSnapshot := svc.Snapshot()
 		err := ui.WorldView(worldSnapshot).Render(r.Context(), write)
 		if err != nil {

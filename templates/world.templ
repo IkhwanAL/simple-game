@@ -2,16 +2,20 @@ package ui
 
 import "github.com/ikhwanal/tinyworlds/internal/world"
 
-templ CellView(cell world.CellType) {
+templ CellView(cell world.CellType, hasPath bool) {
 	<div
-		class={ "w-4", "h-4", GetColorCeilType(cell), "transition-all", "duration-200", "ease-linear" }
-	></div>
+		class={ "w-4", "h-4", GetColorCeilType(cell), "flex items-center justify-center" }
+	>
+		if hasPath == true {
+			<div class="w-1 h-1 bg-red-500 rounded-full"></div>
+		}
+	</div>
 }
 
 templ WorldView(s world.WorldSnapshot) {
 	<div
 		class="relative inline-block"
-		hx-get="/tick"
+		hx-get="/snapshot"
 		hx-trigger="every 250ms"
 		hx-swap="outerHTML"
 	>
@@ -22,9 +26,9 @@ templ WorldView(s world.WorldSnapshot) {
 			<div
 				class="grid gap-[2px] grid-cols-20"
 			>
-				for _, row := range s.Grid {
-					for _, column := range row {
-						@CellView(column.Type)
+				for y, row := range s.Grid {
+					for x, column := range row {
+						@CellView(column.Type, s.PathPoints[[2]int{x, y}])
 					}
 				}
 			</div>

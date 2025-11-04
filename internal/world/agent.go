@@ -21,6 +21,7 @@ type Agent struct {
 	Energy int
 	IsDie  bool
 	Dir    [2]int
+	Path   []Chord
 }
 
 func NewAgent(id, x, y, energy int) *Agent {
@@ -34,6 +35,7 @@ func (a *Agent) Eat(w *World) {
 	if w.Grid[a.Y][a.X].Type == Food {
 		w.AmountFood -= 1
 		a.Energy += EnergyFoodGain
+		a.Path = nil
 	}
 }
 

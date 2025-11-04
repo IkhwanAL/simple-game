@@ -1,6 +1,8 @@
 # Tiny Worlds
 Simulation World Where Agent Search For Food, Eat, Reproduction
 
+![Cover Tiny World Simulation](./docs/image-cover.png) 
+
 ## Why This Project Exists
 I want to learn Something But a Normal CRUD is boring. So i try to create game like simulation that involve backend.
 

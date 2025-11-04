@@ -29,7 +29,7 @@ func ControlView() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex gap-2 mb-2\"><button hx-post=\"/pause\" class=\"px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded\" hx-swap=\"none\">⏸/▶</button> <button hx-post=\"/speedDown\" class=\"px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded\" hx-swap=\"none\">⏪</button> <button hx-post=\"/speedUp\" class=\"px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded\" hx-swap=\"none\">⏩</button> <button hx-post=\"/spawn-agent\" class=\"px-2 py-1 bg-green-700 hover:bg-green-600 rounded\" hx-swap=\"none\">🟢 Agent</button> <button hx-post=\"/spawn-food\" class=\"px-2 py-1 bg-green-500 hover:bg-green-400 rounded\" hx-swap=\"none\">🍏 Food</button></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex gap-2 mb-2\"><button hx-post=\"/pause\" class=\"px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded\" hx-swap=\"none\">⏸/▶</button> <button hx-post=\"/speed-down\" class=\"px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded\" hx-swap=\"none\">⏪</button> <button hx-post=\"/speed-up\" class=\"px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded\" hx-swap=\"none\">⏩</button> <button hx-post=\"/spawn-agent\" class=\"px-2 py-1 bg-green-700 hover:bg-green-600 rounded\" hx-swap=\"none\">🟢 Agent</button> <button hx-post=\"/spawn-food\" class=\"px-2 py-1 bg-green-500 hover:bg-green-400 rounded\" hx-swap=\"none\">🍏 Food</button></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

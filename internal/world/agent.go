@@ -97,6 +97,7 @@ func (a *Agent) SetAgentPosition(px, py int) {
 	a.Y = py
 }
 
+// TODO Need To Think About Unique ID To Prevent Identical ID
 func (a *Agent) Reproduction(ID int, w *World) *Agent {
 	chance := rand.IntN(1000)
 

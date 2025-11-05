@@ -14,22 +14,24 @@ import (
 )
 
 var (
-	w = world.NewWorld(20, 20, 1)
+	w = world.NewWorld(20, 20, 1, false)
 )
 
 func main() {
 
 	world.InitLogger()
 
-	svc := world.NewService(w)
-	svc.StartTick(500 * time.Millisecond)
-
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
+	hubSocket := server.NewWebSocketHub()
+
+	svc := server.NewService(w)
+	svc.StartTick(500*time.Millisecond, hubSocket)
+
 	srv := &http.Server{
 		Addr:    "127.0.0.1:8080",
-		Handler: server.Router(svc), // ✅ We expose a router instead of blocking
+		Handler: server.Router(svc, hubSocket), // ✅ We expose a router instead of blocking
 	}
 
 	go func() {

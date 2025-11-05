@@ -18,14 +18,21 @@ Need to have `make` command. To install `make`, look at google. (Don't Be Lazy)
 
 And then type `make run`
 
+## Existing Feature
+
+- Debug UI (Pause, Stop/Start, Add New Agent Manual, Add New Food Manual, Speed Up, Slow Down)
+- BFS For Path Finding
+- Eat, Walk, Reproduction
+- Death
+- Add Trail For Path Finding (Need A Button To Be Able To Toggle)
+
 ## Current Plan
 
-Improve The Existing Feature
+- Convert HTTP Pooling into Websocket
+- Smooth Animation
 
 ## Next Future Plan
 
 - Each Agent Able to Expand Conquer other Agent
 - The Current Right Now is heavily depends on Mutex, Might Convert it Into Channel
-- Convert HTTP Pooling into Websocket
-- Smooth Animation
 

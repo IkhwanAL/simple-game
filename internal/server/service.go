@@ -1,16 +1,20 @@
-package world
+package server
 
 import (
+	"context"
+	"encoding/json"
 	"log"
 	"math/rand"
 	"sync"
 	"sync/atomic"
 
 	"time"
+
+	"github.com/ikhwanal/tinyworlds/internal/world"
 )
 
 type Service struct {
-	world    *World
+	world    *world.World
 	stopChan chan struct{}
 	ticker   *time.Ticker
 	paused   atomic.Bool
@@ -19,7 +23,7 @@ type Service struct {
 	Interval  time.Duration
 }
 
-func NewService(w *World) *Service {
+func NewService(w *world.World) *Service {
 	return &Service{
 		speedChan: make(chan time.Duration),
 		stopChan:  make(chan struct{}), // MUST initialize
@@ -27,32 +31,32 @@ func NewService(w *World) *Service {
 	}
 }
 
-func (s *Service) Snapshot() WorldSnapshot {
+func (s *Service) Snapshot() world.WorldSnapshot {
 	return s.world.Snapshot()
 }
 
 func (s *Service) SpawnAgent() {
-	s.world.mu.Lock()
-	defer s.world.mu.Unlock()
+	s.world.Mu.Lock()
+	defer s.world.Mu.Unlock()
 
 	randomNum := rand.Intn(999)
 
-	agent := NewAgent(randomNum, rand.Intn(s.world.Width-1), rand.Intn(s.world.Height-1), StartingEnergy)
+	agent := world.NewAgent(randomNum, rand.Intn(s.world.Width-1), rand.Intn(s.world.Height-1), world.StartingEnergy)
 	s.world.AddAgent(agent)
 }
 
 func (s *Service) SpawnFood() {
-	s.world.mu.Lock()
-	defer s.world.mu.Unlock()
+	s.world.Mu.Lock()
+	defer s.world.Mu.Unlock()
 
-	s.world.spawnFood()
+	s.world.SpawnFood()
 }
 
-func (s *Service) StartTick(interval time.Duration) {
+func (s *Service) StartTick(interval time.Duration, hub *WebSocketHub) {
 	if s.ticker != nil {
 		s.ticker.Stop()
 		for len(s.ticker.C) > 0 {
-			<-s.ticker.C // drain zombie ticks
+			<-s.ticker.C // drain any left over time
 		}
 	}
 
@@ -63,18 +67,20 @@ func (s *Service) StartTick(interval time.Duration) {
 		for {
 			select {
 			case <-s.ticker.C:
-				// fmt.Println("Ticker Called", time.Now().Format(time.RFC3339Nano), "svc=", s)
-				// fmt.Println("Ticker Called", s.ticker, time.Now())
 				if s.paused.Load() {
 					continue
 				}
 				s.world.Tick()
+				snapshot := s.Snapshot()
+				msg, err := json.Marshal(snapshot)
+				if err != nil {
+					log.Fatal(err)
+				}
+				hub.Broadcast(context.Background(), msg)
 			case newInterval := <-s.speedChan:
-				log.Printf("Try To Change Speed %s", newInterval)
 				s.ticker.Stop()
 				s.Interval = newInterval
 				s.ticker = time.NewTicker(newInterval)
-				log.Printf("Change Tick Speed %s", newInterval)
 			case <-s.stopChan:
 				s.ticker.Stop()
 				log.Println("The World Cease To Exists")
@@ -101,4 +107,5 @@ func (s *Service) Stop() {
 		log.Println("Calling Stop()")
 		close(s.stopChan)
 	})
+
 }

@@ -39,7 +39,8 @@ type World struct {
 	BornCount  int
 	Grid       [][]Cell
 	Agents     []*Agent
-	mu         sync.RWMutex
+	Mu         sync.RWMutex
+	DebugMode  bool
 }
 
 type WorldSnapshot struct {
@@ -51,13 +52,15 @@ type WorldSnapshot struct {
 	DeathCount int
 	BornCount  int
 	AgentCount int
-	PathPoints map[[2]int]bool
+	// PathPoints map[[2]int]bool
+	PathPoints map[string]bool
 }
 
-func NewWorld(width, height, starterAgent int) *World {
+func NewWorld(width, height, starterAgent int, isDebugOn bool) *World {
 	world := &World{
-		Height: height,
-		Width:  width,
+		Height:    height,
+		Width:     width,
+		DebugMode: isDebugOn,
 	}
 
 	world.Grid = make([][]Cell, height)
@@ -81,7 +84,7 @@ func NewWorld(width, height, starterAgent int) *World {
 
 	// Spawn Minim Food
 	for range width * height / 5 {
-		world.spawnFood()
+		world.SpawnFood()
 	}
 
 	freeCells := make([][2]int, 0)
@@ -118,7 +121,7 @@ func (w *World) AddAgent(a *Agent) {
 	w.Agents = append(w.Agents, a)
 }
 
-func (w *World) spawnFood() {
+func (w *World) SpawnFood() {
 	x, y := rand.IntN(w.Height), rand.IntN(w.Width)
 
 	if w.Grid[y][x].Type == Empty {
@@ -128,9 +131,9 @@ func (w *World) spawnFood() {
 }
 
 func (w *World) Tick() {
-	w.mu.Lock()
+	w.Mu.Lock()
 
-	defer w.mu.Unlock()
+	defer w.Mu.Unlock()
 
 	w.TickCount++
 
@@ -143,13 +146,10 @@ func (w *World) Tick() {
 		} else {
 			nextX, nextY = a.MoveAiminglessly(w)
 		}
-		// fmt.Printf("CX: %d, CY: %d, NX: %d, NY: %d \n", a.X, a.Y, nextX, nextY)
 		a.SetAgentPosition(nextX, nextY)
 
 		if len(a.Path) > 0 {
-			// fmt.Printf("Before %v \n", a.Path)
 			a.Path = a.Path[1:]
-			// fmt.Printf("After %v\n", a.Path)
 		}
 
 		a.Eat(w)
@@ -169,10 +169,9 @@ func (w *World) Tick() {
 
 	growth := rand.IntN(1000)
 	if growth < 25 {
-		w.spawnFood()
+		w.SpawnFood()
 	}
 
-	fmt.Println("\tTick Completed")
 }
 
 func (w *World) RemoveAgent(target *Agent, duration time.Duration) {
@@ -190,15 +189,15 @@ func (w *World) RemoveAgent(target *Agent, duration time.Duration) {
 	go func(x, y int) {
 		time.Sleep(duration)
 
-		w.mu.Lock()
-		defer w.mu.Unlock()
+		w.Mu.Lock()
+		defer w.Mu.Unlock()
 		w.Grid[y][x].Type = Empty
 	}(target.X, target.Y)
 }
 
 func (w *World) Snapshot() WorldSnapshot {
-	w.mu.RLock()
-	defer w.mu.RUnlock()
+	w.Mu.RLock()
+	defer w.Mu.RUnlock()
 
 	var worldCopy WorldSnapshot
 
@@ -228,11 +227,14 @@ func (w *World) Snapshot() WorldSnapshot {
 	worldCopy.BornCount = w.BornCount
 	worldCopy.DeathCount = w.DeathCount
 
-	worldCopy.PathPoints = make(map[[2]int]bool)
+	worldCopy.PathPoints = make(map[string]bool)
 
-	for _, a := range worldCopy.Agents {
-		for _, p := range a.Path {
-			worldCopy.PathPoints[[2]int{p.x, p.y}] = true
+	if w.DebugMode {
+		for _, a := range worldCopy.Agents {
+			for _, p := range a.Path {
+				xy := fmt.Sprintf("%d,%d", p.x, p.y)
+				worldCopy.PathPoints[xy] = true
+			}
 		}
 	}
 

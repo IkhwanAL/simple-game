@@ -4,7 +4,7 @@ import "github.com/ikhwanal/tinyworlds/internal/world"
 import "fmt"
 
 templ StatsView(s world.WorldSnapshot) {
-	<div class="bg-gray-800 text-white p-3 rounded-md text-sm space-y-1 w-40">
+	<div id="stat" class="bg-gray-800 text-white p-3 rounded-md text-sm space-y-1 w-40">
 		<div>Tick: { s.Tick }</div>
 		<div>Agents: { s.AgentCount }</div>
 		<div>Avg Energy: { fmt.Sprintf("%.2f", s.AvgEnergy) }</div>

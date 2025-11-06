@@ -29,19 +29,7 @@ func MainView(content templ.Component) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html><head><meta charset=\"utf-8\"><title>TinyWorlds</title><script src=\"https://unpkg.com/htmx.org@2.0.8/dist/htmx.min.js\"></script><link href=\"/static/tailwind.css\" rel=\"stylesheet\"><script src=\"/js/ws.js\"></script></head><body class=\"bg-gray-900 text-gray-100 flex flex-col items-center min-h-screen py-6\"><h1 class=\"text-3xl font-bold mb-4\">🌍 TinyWorlds</h1>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = ControlView().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = content.Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<p class=\"mt-4 text-sm text-gray-400\">Agent moves every second & eats green food 🍎</p></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html><head><meta charset=\"utf-8\"><title>TinyWorlds</title><script src=\"https://unpkg.com/htmx.org@2.0.8/dist/htmx.min.js\"></script><link href=\"/static/tailwind.css\" rel=\"stylesheet\"><script type=\"module\" src=\"/js/ws.js\"></script><script type=\"module\" src=\"/js/client.js\"></script></head><style>\r\n      .cell {width: 16px; height: 16px;}\r\n      .agent { transition: transform 0.25s linear; } /* smooth move */\r\n    </style><body class=\"bg-gray-900 text-gray-100 flex flex-col items-center min-h-screen py-6\"><h1 class=\"text-3xl font-bold mb-4\">🌍 TinyWorlds</h1><!-- @ControlView() --><!-- @content --><div id=\"world\" class=\"grid border-2 border-white mb-4\"></div><div id=\"stats\" class=\"text-gray-400\"></div><p class=\"mt-4 text-sm text-gray-400\">Agent moves every second & eats green food 🍎</p></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

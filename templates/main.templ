@@ -8,14 +8,21 @@ templ MainView(content templ.Component) {
 			<title>TinyWorlds</title>
 			<script src="https://unpkg.com/htmx.org@2.0.8/dist/htmx.min.js"></script>
 			<link href="/static/tailwind.css" rel="stylesheet"/>
-			<script src="/js/ws.js"></script>
+			<script type="module" src="/js/ws.js"></script>
+			<script type="module" src="/js/client.js"></script>
 		</head>
+		<style>
+      .cell {width: 16px; height: 16px;}
+      .agent { transition: transform 0.25s linear; } /* smooth move */
+    </style>
 		<body
 			class="bg-gray-900 text-gray-100 flex flex-col items-center min-h-screen py-6"
 		>
 			<h1 class="text-3xl font-bold mb-4">🌍 TinyWorlds</h1>
-			@ControlView()
-			@content
+			<!-- @ControlView() -->
+			<!-- @content -->
+			<div id="world" class="grid border-2 border-white mb-4"></div>
+			<div id="stats" class="text-gray-400"></div>
 			<p class="mt-4 text-sm text-gray-400">
 				Agent moves every second & eats green food 🍎
 			</p>

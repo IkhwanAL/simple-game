@@ -2,7 +2,6 @@ package world
 
 import (
 	"container/list"
-	"fmt"
 	"math/rand/v2"
 	"sync"
 	"time"
@@ -41,19 +40,6 @@ type World struct {
 	Agents     []*Agent
 	Mu         sync.RWMutex
 	DebugMode  bool
-}
-
-type WorldSnapshot struct {
-	Grid       [][]Cell
-	Agents     []Agent
-	Tick       int
-	AvgEnergy  float64
-	AmountFood int
-	DeathCount int
-	BornCount  int
-	AgentCount int
-	// PathPoints map[[2]int]bool
-	PathPoints map[string]bool
 }
 
 func NewWorld(width, height, starterAgent int, isDebugOn bool) *World {
@@ -106,7 +92,7 @@ func NewWorld(width, height, starterAgent int, isDebugOn bool) *World {
 	for i := range starterAgent {
 		location := freeCells[i]
 		x, y := location[0], location[1]
-		agent := NewAgent(i, x, y, StartingEnergy)
+		agent := NewAgent(x, y, StartingEnergy)
 
 		world.Agents = append(world.Agents, agent)
 		world.Grid[y][x].Type = AgentEn
@@ -195,51 +181,116 @@ func (w *World) RemoveAgent(target *Agent, duration time.Duration) {
 	}(target.X, target.Y)
 }
 
+type WorldSnapshot struct {
+	Tick     int             `json:"tick"`
+	Width    int             `json:"width"`
+	Height   int             `json:"height"`
+	Food     [][2]int        `json:"foods"`
+	Agents   []AgentSnapshot `json:"agents"`
+	Obstacle [][2]int        `json:"obstacles"`
+}
+
+type AgentSnapshot struct {
+	ID int `json:"id"`
+	X  int `json:"x"`
+	Y  int `json:"y"`
+}
+
 func (w *World) Snapshot() WorldSnapshot {
 	w.Mu.RLock()
 	defer w.Mu.RUnlock()
 
-	var worldCopy WorldSnapshot
+	var aCopy WorldSnapshot
 
-	worldCopy.Grid = make([][]Cell, len(w.Grid))
-	for i := range w.Grid {
-		row := make([]Cell, len(w.Grid[i]))
-		copy(row, w.Grid[i])
-		worldCopy.Grid[i] = row
-	}
+	aCopy.Tick = w.TickCount
+	aCopy.Width = w.Width
+	aCopy.Height = w.Height
 
-	totalEnergy := 0
-	worldCopy.Agents = make([]Agent, len(w.Agents))
-	for i, a := range w.Agents {
-		worldCopy.Agents[i] = *a // copy by value, not by pointer
-		totalEnergy += a.Energy
-		worldCopy.AgentCount++
-	}
+	var foods [][2]int
+	var obstacles [][2]int
 
-	avgEnergy := 0.0
-	if len(w.Agents) > 0 {
-		avgEnergy = float64(totalEnergy) / float64(len(w.Agents))
-	}
-
-	worldCopy.AvgEnergy = avgEnergy
-	worldCopy.Tick = w.TickCount
-	worldCopy.AmountFood = w.AmountFood
-	worldCopy.BornCount = w.BornCount
-	worldCopy.DeathCount = w.DeathCount
-
-	worldCopy.PathPoints = make(map[string]bool)
-
-	if w.DebugMode {
-		for _, a := range worldCopy.Agents {
-			for _, p := range a.Path {
-				xy := fmt.Sprintf("%d,%d", p.x, p.y)
-				worldCopy.PathPoints[xy] = true
+	for y, row := range w.Grid {
+		for x, column := range row {
+			switch column.Type {
+			case Food:
+				foods = append(foods, [2]int{x, y})
+			case Obstacle:
+				obstacles = append(obstacles, [2]int{x, y})
 			}
 		}
 	}
 
-	return worldCopy
+	aCopy.Food = foods
+
+	if aCopy.Food == nil {
+		aCopy.Food = [][2]int{}
+	}
+
+	aCopy.Obstacle = obstacles
+
+	var agenst []AgentSnapshot
+
+	for _, a := range w.Agents {
+		agenst = append(agenst, AgentSnapshot{
+			ID: a.ID,
+			X:  a.X,
+			Y:  a.Y,
+		})
+	}
+
+	aCopy.Agents = agenst
+	if aCopy.Agents == nil {
+		aCopy.Agents = []AgentSnapshot{}
+	}
+
+	return aCopy
 }
+
+// func (w *World) Snapshot() WorldSnapshot {
+// 	w.Mu.RLock()
+// 	defer w.Mu.RUnlock()
+//
+// 	var worldCopy WorldSnapshot
+//
+// 	worldCopy.Grid = make([][]Cell, len(w.Grid))
+// 	for i := range w.Grid {
+// 		row := make([]Cell, len(w.Grid[i]))
+// 		copy(row, w.Grid[i])
+// 		worldCopy.Grid[i] = row
+// 	}
+//
+// 	totalEnergy := 0
+// 	worldCopy.Agents = make([]Agent, len(w.Agents))
+// 	for i, a := range w.Agents {
+// 		worldCopy.Agents[i] = *a // copy by value, not by pointer
+// 		totalEnergy += a.Energy
+// 		worldCopy.AgentCount++
+// 	}
+//
+// 	avgEnergy := 0.0
+// 	if len(w.Agents) > 0 {
+// 		avgEnergy = float64(totalEnergy) / float64(len(w.Agents))
+// 	}
+//
+// 	worldCopy.AvgEnergy = avgEnergy
+// 	worldCopy.Tick = w.TickCount
+// 	worldCopy.AmountFood = w.AmountFood
+// 	worldCopy.BornCount = w.BornCount
+// 	worldCopy.DeathCount = w.DeathCount
+//
+// 	worldCopy.PathPoints = make(map[string]bool)
+//
+// 	if w.DebugMode {
+// 		for _, a := range worldCopy.Agents {
+// 			for _, p := range a.Path {
+// 				xy := fmt.Sprintf("%d,%d", p.x, p.y)
+// 				worldCopy.PathPoints[xy] = true
+// 			}
+// 		}
+// 	}
+//
+// 	return worldCopy
+// }
 
 type Chord struct {
 	x, y int
@@ -277,7 +328,7 @@ func (w *World) FindTheClosestFood(currentX, currentY int, a *Agent) (int, int, 
 				continue
 			}
 
-			if w.Grid[ny][nx].Type == Obstacle {
+			if w.Grid[ny][nx].Type == Obstacle || w.Grid[ny][nx].Type == AgentEn {
 				continue
 			}
 

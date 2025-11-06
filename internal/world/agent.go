@@ -3,6 +3,7 @@ package world
 import (
 	"errors"
 	"math/rand/v2"
+	"sync/atomic"
 	"time"
 )
 
@@ -15,6 +16,8 @@ var DIRS = [4][2]int{
 	UP, DOWN, LEFT, RIGHT,
 }
 
+var nextAgentId atomic.Int64
+
 type Agent struct {
 	ID     int
 	X, Y   int
@@ -24,9 +27,14 @@ type Agent struct {
 	Path   []Chord
 }
 
-func NewAgent(id, x, y, energy int) *Agent {
+func newAgentID() int {
+	return int(nextAgentId.Add(1))
+}
+
+func NewAgent(x, y, energy int) *Agent {
 	direction := [][2]int{UP, DOWN, LEFT, RIGHT}
 	startingDirection := direction[rand.IntN(len(direction))]
+	id := newAgentID()
 
 	return &Agent{ID: id, X: x, Y: y, Energy: energy, Dir: startingDirection}
 }
@@ -101,7 +109,7 @@ func (a *Agent) SetAgentPosition(px, py int) {
 func (a *Agent) Reproduction(ID int, w *World) *Agent {
 	chance := rand.IntN(1000)
 
-	if chance < 20 && a.Energy >= EnergyReproduceThreshold {
+	if chance < 500 && a.Energy >= EnergyReproduceThreshold {
 		a.Energy -= EnergyReproduceCost
 		directions := [][2]int{
 			{0, -1},  // up
@@ -128,7 +136,7 @@ func (a *Agent) Reproduction(ID int, w *World) *Agent {
 				continue
 			}
 
-			return NewAgent(ID+1, nx, ny, StartingEnergy)
+			return NewAgent(nx, ny, StartingEnergy)
 		}
 
 	}

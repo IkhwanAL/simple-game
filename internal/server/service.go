@@ -39,9 +39,7 @@ func (s *Service) SpawnAgent() {
 	s.world.Mu.Lock()
 	defer s.world.Mu.Unlock()
 
-	randomNum := rand.Intn(999)
-
-	agent := world.NewAgent(randomNum, rand.Intn(s.world.Width-1), rand.Intn(s.world.Height-1), world.StartingEnergy)
+	agent := world.NewAgent(rand.Intn(s.world.Width-1), rand.Intn(s.world.Height-1), world.StartingEnergy)
 	s.world.AddAgent(agent)
 }
 
@@ -72,6 +70,7 @@ func (s *Service) StartTick(interval time.Duration, hub *WebSocketHub) {
 				}
 				s.world.Tick()
 				snapshot := s.Snapshot()
+
 				msg, err := json.Marshal(snapshot)
 				if err != nil {
 					log.Fatal(err)

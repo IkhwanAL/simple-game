@@ -1,7 +1,6 @@
 package ui
 
 import "github.com/ikhwanal/tinyworlds/internal/world"
-import "fmt"
 
 templ CellView(cell world.CellType, hasPath bool) {
 	<div
@@ -26,15 +25,5 @@ templ WorldBoardView(s world.WorldSnapshot) {
 	<div
 		id="world"
 		class="border-2 border-white mb-2"
-	>
-		<div
-			class="grid gap-[2px] grid-cols-20"
-		>
-			for y, row := range s.Grid {
-				for x, column := range row {
-					@CellView(column.Type, s.PathPoints[fmt.Sprintf("%d,%d", x, y)])
-				}
-			}
-		</div>
-	</div>
+	></div>
 }

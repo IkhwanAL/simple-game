@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -56,20 +57,30 @@ func Router(svc *Service, hub *WebSocketHub) http.Handler {
 	ControlRouter(mux, svc)
 
 	mux.HandleFunc("GET /ws", func(w http.ResponseWriter, r *http.Request) {
-		conn, err := websocket.Accept(w, r, nil)
+		conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
+			InsecureSkipVerify: true,
+		})
 		if err != nil {
 			log.Println("failed to open socket")
 			return
 		}
 
 		hub.AddConn(conn)
-		defer hub.RemoveConn(conn)
+		defer func() {
+			hub.RemoveConn(conn)
+			conn.Close(websocket.StatusNormalClosure, "")
+		}()
 
-		ctx := r.Context()
+		ctx := context.Background()
 		for {
 			_, _, err := conn.Read(ctx)
 			if err != nil {
-				log.Println("failed to read income messages")
+				code := websocket.CloseStatus(err)
+				if code == websocket.StatusGoingAway || code == websocket.StatusNormalClosure {
+					// expected client close — ignore quietly
+					break
+				}
+				log.Printf("websocket read error: %v (code=%v)", err, code)
 				return
 			}
 		}

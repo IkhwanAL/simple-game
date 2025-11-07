@@ -109,7 +109,7 @@ func (a *Agent) SetAgentPosition(px, py int) {
 func (a *Agent) Reproduction(ID int, w *World) *Agent {
 	chance := rand.IntN(1000)
 
-	if chance < 500 && a.Energy >= EnergyReproduceThreshold {
+	if chance < 50 && a.Energy >= EnergyReproduceThreshold {
 		a.Energy -= EnergyReproduceCost
 		directions := [][2]int{
 			{0, -1},  // up

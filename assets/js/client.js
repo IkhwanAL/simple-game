@@ -51,8 +51,6 @@ function renderWorldAndStat(snapshot) {
       delete agentEls[agent.id]
       continue
     }
-
-    console.log(agentElement)
     if (!agentElement) {
       // Create Agent And Render
       let el = document.createElement("div")

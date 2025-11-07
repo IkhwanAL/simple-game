@@ -4,7 +4,6 @@ import (
 	"container/list"
 	"math/rand/v2"
 	"sync"
-	"time"
 )
 
 type CellType int
@@ -30,16 +29,17 @@ type Cell struct {
 }
 
 type World struct {
-	Width      int
-	Height     int
-	AmountFood int
-	TickCount  int
-	DeathCount int
-	BornCount  int
-	Grid       [][]Cell
-	Agents     []*Agent
-	Mu         sync.RWMutex
-	DebugMode  bool
+	Width       int
+	Height      int
+	AmountFood  int
+	TickCount   int
+	DeathCount  int
+	BornCount   int
+	Grid        [][]Cell
+	Agents      []*Agent
+	PendingDead []*Agent
+	Mu          sync.RWMutex
+	DebugMode   bool
 }
 
 func NewWorld(width, height, starterAgent int, isDebugOn bool) *World {
@@ -123,7 +123,20 @@ func (w *World) Tick() {
 
 	w.TickCount++
 
+	if len(w.PendingDead) > 0 {
+		for _, deadAgent := range w.PendingDead {
+			w.Grid[deadAgent.Y][deadAgent.X].Type = Empty
+			w.RemoveAgent(deadAgent)
+		}
+
+		w.PendingDead = nil
+	}
+
 	for _, a := range w.Agents {
+		if a.IsDie {
+			continue
+		}
+
 		prevX, prevY := a.X, a.Y
 		nextX, nextY, found := w.FindTheClosestFood(a.X, a.Y, a)
 
@@ -140,13 +153,13 @@ func (w *World) Tick() {
 
 		a.Eat(w)
 
-		a.Die(w, 500*time.Millisecond)
+		a.Die(w)
 
 		// Reflect Into World Map
 		w.Grid[prevY][prevX].Type = Empty
 		w.Grid[nextY][nextX].Type = AgentEn
 
-		newAgent := a.Reproduction(a.ID, w)
+		newAgent := a.Reproduction(w)
 		if newAgent != nil {
 			w.BornCount++
 			w.Agents = append(w.Agents, newAgent)
@@ -157,13 +170,9 @@ func (w *World) Tick() {
 	if growth < 25 {
 		w.SpawnFood()
 	}
-
 }
 
-func (w *World) RemoveAgent(target *Agent, duration time.Duration) {
-	target.IsDie = true
-	w.DeathCount++
-
+func (w *World) RemoveAgent(target *Agent) {
 	id := target.ID
 	for i, a := range w.Agents {
 		if a.ID == id {
@@ -172,28 +181,24 @@ func (w *World) RemoveAgent(target *Agent, duration time.Duration) {
 		}
 	}
 
-	go func(x, y int) {
-		time.Sleep(duration)
-
-		w.Mu.Lock()
-		defer w.Mu.Unlock()
-		w.Grid[y][x].Type = Empty
-	}(target.X, target.Y)
 }
 
 type WorldSnapshot struct {
-	Tick     int             `json:"tick"`
-	Width    int             `json:"width"`
-	Height   int             `json:"height"`
-	Food     [][2]int        `json:"foods"`
-	Agents   []AgentSnapshot `json:"agents"`
-	Obstacle [][2]int        `json:"obstacles"`
+	Tick       int             `json:"tick"`
+	Width      int             `json:"width"`
+	Height     int             `json:"height"`
+	Food       [][2]int        `json:"foods"`
+	Agents     []AgentSnapshot `json:"agents"`
+	Obstacle   [][2]int        `json:"obstacles"`
+	BornCount  int             `json:"bornCount"`
+	DeathCount int             `json:"deathCount"`
 }
 
 type AgentSnapshot struct {
-	ID int `json:"id"`
-	X  int `json:"x"`
-	Y  int `json:"y"`
+	ID     int  `json:"id"`
+	X      int  `json:"x"`
+	Y      int  `json:"y"`
+	IsDead bool `json:"isDead"`
 }
 
 func (w *World) Snapshot() WorldSnapshot {
@@ -205,6 +210,8 @@ func (w *World) Snapshot() WorldSnapshot {
 	aCopy.Tick = w.TickCount
 	aCopy.Width = w.Width
 	aCopy.Height = w.Height
+	aCopy.BornCount = w.BornCount
+	aCopy.DeathCount = w.DeathCount
 
 	var foods [][2]int
 	var obstacles [][2]int
@@ -228,69 +235,24 @@ func (w *World) Snapshot() WorldSnapshot {
 
 	aCopy.Obstacle = obstacles
 
-	var agenst []AgentSnapshot
+	var agents []AgentSnapshot
 
 	for _, a := range w.Agents {
-		agenst = append(agenst, AgentSnapshot{
-			ID: a.ID,
-			X:  a.X,
-			Y:  a.Y,
+		agents = append(agents, AgentSnapshot{
+			ID:     a.ID,
+			X:      a.X,
+			Y:      a.Y,
+			IsDead: a.IsDie,
 		})
 	}
 
-	aCopy.Agents = agenst
+	aCopy.Agents = agents
 	if aCopy.Agents == nil {
 		aCopy.Agents = []AgentSnapshot{}
 	}
 
 	return aCopy
 }
-
-// func (w *World) Snapshot() WorldSnapshot {
-// 	w.Mu.RLock()
-// 	defer w.Mu.RUnlock()
-//
-// 	var worldCopy WorldSnapshot
-//
-// 	worldCopy.Grid = make([][]Cell, len(w.Grid))
-// 	for i := range w.Grid {
-// 		row := make([]Cell, len(w.Grid[i]))
-// 		copy(row, w.Grid[i])
-// 		worldCopy.Grid[i] = row
-// 	}
-//
-// 	totalEnergy := 0
-// 	worldCopy.Agents = make([]Agent, len(w.Agents))
-// 	for i, a := range w.Agents {
-// 		worldCopy.Agents[i] = *a // copy by value, not by pointer
-// 		totalEnergy += a.Energy
-// 		worldCopy.AgentCount++
-// 	}
-//
-// 	avgEnergy := 0.0
-// 	if len(w.Agents) > 0 {
-// 		avgEnergy = float64(totalEnergy) / float64(len(w.Agents))
-// 	}
-//
-// 	worldCopy.AvgEnergy = avgEnergy
-// 	worldCopy.Tick = w.TickCount
-// 	worldCopy.AmountFood = w.AmountFood
-// 	worldCopy.BornCount = w.BornCount
-// 	worldCopy.DeathCount = w.DeathCount
-//
-// 	worldCopy.PathPoints = make(map[string]bool)
-//
-// 	if w.DebugMode {
-// 		for _, a := range worldCopy.Agents {
-// 			for _, p := range a.Path {
-// 				xy := fmt.Sprintf("%d,%d", p.x, p.y)
-// 				worldCopy.PathPoints[xy] = true
-// 			}
-// 		}
-// 	}
-//
-// 	return worldCopy
-// }
 
 type Chord struct {
 	x, y int

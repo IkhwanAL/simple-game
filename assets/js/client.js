@@ -20,7 +20,7 @@ function renderWorldAndStat(snapshot) {
     createGrid(gridWidth, gridHeight)
   }
 
-  statsEl.textContent = `Tick: ${snapshot.tick} | Agents: ${snapshot.agents?.length || 0} | Food: ${snapshot.foods?.length || 0}`;
+  statsEl.textContent = `Tick: ${snapshot.tick} | Agents: ${snapshot.agents?.length || 0} | Food: ${snapshot.foods?.length || 0} | Born: ${snapshot.bornCount} | Death ${snapshot.deathCount}`;
 
   for (let y = 0; y < gridHeight; y++) {
     for (let x = 0; x < gridWidth; x++) {
@@ -39,17 +39,30 @@ function renderWorldAndStat(snapshot) {
     cells[y][x].className = "cell bg-stone-400"
   }
 
+  // When THEY Die The Agent Element is Not Removed -> need to fix this
   for (let i = 0; i < snapshot.agents.length; i++) {
     const agent = snapshot.agents[i];
     let agentElement = agentEls[agent.id]
 
+    if (agent.isDead) {
+      if (agentElement && agentElement.parentNode) {
+        agentElement.parentNode.removeChild(agentElement)
+      }
+      delete agentEls[agent.id]
+      continue
+    }
+
+    console.log(agentElement)
     if (!agentElement) {
+      // Create Agent And Render
       let el = document.createElement("div")
       el.className = "agent w-4 h-4 bg-red-500 absolute"
       worldEl.appendChild(el)
       agentEls[agent.id] = el
       agentElement = el
     }
+
+    // Animate It
     agentElement.style.transform = `translate(${agent.x * 16}px, ${agent.y * 16}px)`;
   }
 }

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"math/rand/v2"
 	"sync/atomic"
-	"time"
 )
 
 var UP = [2]int{0, -1}
@@ -106,7 +105,7 @@ func (a *Agent) SetAgentPosition(px, py int) {
 }
 
 // TODO Need To Think About Unique ID To Prevent Identical ID
-func (a *Agent) Reproduction(ID int, w *World) *Agent {
+func (a *Agent) Reproduction(w *World) *Agent {
 	chance := rand.IntN(1000)
 
 	if chance < 50 && a.Energy >= EnergyReproduceThreshold {
@@ -144,8 +143,10 @@ func (a *Agent) Reproduction(ID int, w *World) *Agent {
 	return nil
 }
 
-func (a *Agent) Die(w *World, dieDuration time.Duration) {
-	if a.Energy == 0 {
-		w.RemoveAgent(a, dieDuration)
+func (a *Agent) Die(w *World) {
+	if a.Energy == 0 && !a.IsDie {
+		a.IsDie = true
+		w.DeathCount++
+		w.PendingDead = append(w.PendingDead, a)
 	}
 }

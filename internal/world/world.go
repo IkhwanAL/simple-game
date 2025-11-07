@@ -72,6 +72,9 @@ func NewWorld(width, height, starterAgent int, isDebugOn bool) *World {
 	for range width * height / 5 {
 		world.SpawnFood()
 	}
+	// for range 4 {
+	// 	world.SpawnFood()
+	// }
 
 	freeCells := make([][2]int, 0)
 

@@ -45,8 +45,14 @@ function renderWorldAndStat(snapshot) {
     let agentElement = agentEls[agent.id]
 
     if (agent.isDead) {
-      if (agentElement && agentElement.parentNode) {
-        agentElement.parentNode.removeChild(agentElement)
+      if (agentElement) {
+        agentElement.classList.add("dead")
+        setTimeout(() => {
+          if (agentElement && agentElement.parentNode) {
+            agentElement.parentNode.removeChild(agentElement)
+          }
+
+        }, 500)
       }
       delete agentEls[agent.id]
       continue

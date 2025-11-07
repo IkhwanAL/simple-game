@@ -13,7 +13,10 @@ templ MainView(content templ.Component) {
 		</head>
 		<style>
       .cell {width: 16px; height: 16px;}
-      .agent { transition: transform 0.25s linear; } /* smooth move */
+      .agent { transition: transform 0.25s linear, opacity 0.5s ease-out;} /* smooth move */ 
+      .agent.dead {
+        opacity: 0;
+      }
     </style>
 		<body
 			class="bg-gray-900 text-gray-100 flex flex-col items-center min-h-screen py-6"

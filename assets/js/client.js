@@ -28,6 +28,7 @@ function renderWorldAndStat(snapshot) {
     }
   }
 
+  // Render Food
   for (let i = 0; i < snapshot.foods.length; i++) {
     const [x, y] = snapshot.foods[i];
     cells[y][x].className = "cell bg-green-400"

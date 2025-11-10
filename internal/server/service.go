@@ -78,8 +78,14 @@ func (s *Service) StartTick(interval time.Duration, hub *WebSocketHub) {
 				hub.Broadcast(context.Background(), msg)
 			case newInterval := <-s.speedChan:
 				s.ticker.Stop()
+				for len(s.ticker.C) > 0 {
+					<-s.ticker.C
+				}
+
 				s.Interval = newInterval
 				s.ticker = time.NewTicker(newInterval)
+
+				time.Sleep(interval)
 			case <-s.stopChan:
 				s.ticker.Stop()
 				log.Println("The World Cease To Exists")

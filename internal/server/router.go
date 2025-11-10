@@ -48,21 +48,6 @@ func Router(svc *Service, hub *WebSocketHub) http.Handler {
 			_ = conn.Close(websocket.StatusNormalClosure, "")
 		}()
 
-		// const max = 2<<16 - 1
-		// conn.SetReadLimit(max)
-		//
-		// go func() {
-		// 	ticker := time.NewTicker(30 * time.Second)
-		// 	defer ticker.Stop()
-		//
-		// 	for range ticker.C {
-		// 		err := conn.Ping(context.Background())
-		// 		if err != nil {
-		// 			log.Println("Fuck Error", err)
-		// 		}
-		// 	}
-		// }()
-
 		ctx := context.Background()
 		for {
 			_, _, err := conn.Read(ctx)

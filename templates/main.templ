@@ -13,7 +13,10 @@ templ MainView(content templ.Component) {
 		</head>
 		<style>
       .cell {width: 16px; height: 16px;}
-      .agent { transition: transform 0.25s linear, opacity 0.5s ease-out;} /* smooth move */ 
+      .agent { 
+        transition: transform 0.2s linear, opacity 0.2s ease-out;
+        will-change: transform;
+      }
       .agent.dead {
         opacity: 0;
       }
@@ -26,8 +29,7 @@ templ MainView(content templ.Component) {
 			class="bg-gray-900 text-gray-100 flex flex-col items-center min-h-screen py-6"
 		>
 			<h1 class="text-3xl font-bold mb-4">🌍 TinyWorlds</h1>
-			<!-- @ControlView() -->
-			<!-- @content -->
+			@ControlView()
 			<div id="world" class="grid border-2 border-white mb-4"></div>
 			<div id="stats" class="text-gray-400"></div>
 			<p class="mt-4 text-sm text-gray-400">

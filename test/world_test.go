@@ -2,26 +2,25 @@ package world
 
 import (
 	"testing"
-	"time"
 
 	"github.com/ikhwanal/tinyworlds/internal/world"
 )
 
 func TestAgentMovement(t *testing.T) {
-	w := world.NewWorld(20, 20, 0)
-	agent := world.NewAgent(1, 5, 5, 10)
+	w := world.NewWorld(20, 20, 0, false)
+	agent := world.NewAgent(5, 5, 10)
 
 	w.AddAgent(agent)
 
 	w.Tick()
 
-	if agent.X == 5 || agent.Y == 5 {
+	if agent.X == 5 && agent.Y == 5 {
 		t.Errorf("Agent is Not Moving")
 	}
 }
 
 func TestFoodSpawn(t *testing.T) {
-	w := world.NewWorld(20, 20, 0)
+	w := world.NewWorld(20, 20, 0, false)
 
 	for range 5 {
 		w.Tick()
@@ -38,13 +37,13 @@ func TestFoodSpawn(t *testing.T) {
 }
 
 func TestReproductionMechanism(t *testing.T) {
-	w := world.NewWorld(20, 20, 0)
-	a := world.NewAgent(1, 0, 0, 10)
+	w := world.NewWorld(20, 20, 0, true)
+	a := world.NewAgent(0, 0, 10)
 	w.AddAgent(a)
 
-	a.Energy = 4
+	a.Energy = 20
 
-	agent := a.Reproduction(2, w.Width, w.Height)
+	agent := a.Reproduction(w)
 
 	if agent == nil {
 		t.Errorf("Agent Is Not Created")
@@ -52,17 +51,18 @@ func TestReproductionMechanism(t *testing.T) {
 }
 
 func TestDieMechanismAsync(t *testing.T) {
-	w := world.NewWorld(20, 20, 0)
-	a := world.NewAgent(1, 0, 0, 10)
+	w := world.NewWorld(20, 20, 0, false)
+	a := world.NewAgent(0, 0, 10)
 	w.AddAgent(a)
 
 	a.Energy = 0
-	a.Die(w, 1*time.Millisecond)
-	time.Sleep(5 * time.Millisecond)
+	a.Die(w)
 
 	if a.IsDie != true {
 		t.Errorf("Agent Not Die Despite Energy Reach 0")
 	}
+
+	w.Tick()
 
 	agents := w.Snapshot().Agents
 
@@ -72,11 +72,11 @@ func TestDieMechanismAsync(t *testing.T) {
 }
 
 func TestDieMechanism(t *testing.T) {
-	w := world.NewWorld(20, 20, 0)
-	a := world.NewAgent(1, 0, 0, 10)
+	w := world.NewWorld(20, 20, 0, false)
+	a := world.NewAgent(0, 0, 10)
 	w.AddAgent(a)
 
-	w.RemoveAgentNow(a.ID)
+	w.RemoveAgent(a)
 
 	if len(w.Agents) != 0 {
 		t.Errorf("Agent Is Still Alive")

@@ -104,11 +104,16 @@ func (a *Agent) SetAgentPosition(px, py int) {
 	a.Y = py
 }
 
-// TODO Need To Think About Unique ID To Prevent Identical ID
 func (a *Agent) Reproduction(w *World) *Agent {
 	chance := rand.IntN(1000)
 
-	if chance < 50 && a.Energy >= EnergyReproduceThreshold {
+	success := 50
+
+	if w.DebugMode {
+		chance = 1
+	}
+
+	if chance < success && a.Energy >= EnergyReproduceThreshold {
 		a.Energy -= EnergyReproduceCost
 		directions := [][2]int{
 			{0, -1},  // up

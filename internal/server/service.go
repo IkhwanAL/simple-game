@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"log"
-	"math/rand"
 	"sync"
 	"sync/atomic"
 
@@ -14,7 +13,7 @@ import (
 )
 
 type Service struct {
-	world    *world.World
+	crtl     *world.WorldController
 	stopChan chan struct{}
 	ticker   *time.Ticker
 	paused   atomic.Bool
@@ -23,31 +22,26 @@ type Service struct {
 	Interval  time.Duration
 }
 
-func NewService(w *world.World) *Service {
+func NewService(ctrl *world.WorldController) *Service {
 	return &Service{
 		speedChan: make(chan time.Duration),
 		stopChan:  make(chan struct{}), // MUST initialize
-		world:     w,
+		crtl:      ctrl,
 	}
 }
 
 func (s *Service) Snapshot() world.WorldSnapshot {
-	return s.world.Snapshot()
+	reply := make(chan world.WorldSnapshot)
+	s.crtl.CmdChan <- world.CmdSnapshot{Reply: reply}
+	return <-reply
 }
 
 func (s *Service) SpawnAgent() {
-	s.world.Mu.Lock()
-	defer s.world.Mu.Unlock()
-
-	agent := world.NewAgent(rand.Intn(s.world.Width-1), rand.Intn(s.world.Height-1), world.StartingEnergy)
-	s.world.AddAgent(agent)
+	s.crtl.CmdChan <- world.CmdSpawnAgent{}
 }
 
 func (s *Service) SpawnFood() {
-	s.world.Mu.Lock()
-	defer s.world.Mu.Unlock()
-
-	s.world.SpawnFood()
+	s.crtl.CmdChan <- world.CmdSpawnFood{}
 }
 
 func (s *Service) StartTick(interval time.Duration, hub *WebSocketHub) {
@@ -68,26 +62,22 @@ func (s *Service) StartTick(interval time.Duration, hub *WebSocketHub) {
 				if s.paused.Load() {
 					continue
 				}
-				s.world.Tick()
-				snapshot := s.Snapshot()
+				s.crtl.CmdChan <- world.CmdTick{}
 
+				snapshot := s.Snapshot()
 				msg, err := json.Marshal(snapshot)
 				if err != nil {
 					log.Fatal(err)
 				}
 				hub.Broadcast(context.Background(), msg)
 			case newInterval := <-s.speedChan:
-				s.ticker.Stop()
-				for len(s.ticker.C) > 0 {
-					<-s.ticker.C
-				}
-
 				s.Interval = newInterval
-				s.ticker = time.NewTicker(newInterval)
 
-				time.Sleep(interval)
+				s.ticker.Reset(newInterval)
+
 			case <-s.stopChan:
 				s.ticker.Stop()
+				s.crtl.Stop()
 				log.Println("The World Cease To Exists")
 				return
 			}
@@ -112,5 +102,4 @@ func (s *Service) Stop() {
 		log.Println("Calling Stop()")
 		close(s.stopChan)
 	})
-
 }

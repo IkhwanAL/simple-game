@@ -3,7 +3,6 @@ package world
 import (
 	"container/list"
 	"math/rand/v2"
-	"sync"
 )
 
 type CellType int
@@ -28,6 +27,12 @@ type Cell struct {
 	Type CellType
 }
 
+type WorldCommand struct {
+	Action string
+	Data   any
+	Reply  chan any
+}
+
 type World struct {
 	Width       int
 	Height      int
@@ -38,7 +43,6 @@ type World struct {
 	Grid        [][]Cell
 	Agents      []*Agent
 	PendingDead []*Agent
-	Mu          sync.RWMutex
 	DebugMode   bool
 }
 
@@ -72,9 +76,6 @@ func NewWorld(width, height, starterAgent int, isDebugOn bool) *World {
 	for range width * height / 5 {
 		world.SpawnFood()
 	}
-	// for range 4 {
-	// 	world.SpawnFood()
-	// }
 
 	freeCells := make([][2]int, 0)
 
@@ -120,10 +121,6 @@ func (w *World) SpawnFood() {
 }
 
 func (w *World) Tick() {
-	w.Mu.Lock()
-
-	defer w.Mu.Unlock()
-
 	w.TickCount++
 
 	if len(w.PendingDead) > 0 {
@@ -205,9 +202,6 @@ type AgentSnapshot struct {
 }
 
 func (w *World) Snapshot() WorldSnapshot {
-	w.Mu.RLock()
-	defer w.Mu.RUnlock()
-
 	var aCopy WorldSnapshot
 
 	aCopy.Tick = w.TickCount
@@ -289,7 +283,7 @@ func (w *World) FindTheClosestFood(currentX, currentY int, a *Agent) (int, int, 
 				continue
 			}
 
-			if visited[ny][nx] == true {
+			if visited[ny][nx] {
 				continue
 			}
 

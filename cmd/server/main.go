@@ -13,11 +13,9 @@ import (
 	"github.com/ikhwanal/tinyworlds/internal/world"
 )
 
-var (
-	w = world.NewWorld(20, 20, 1, false)
-)
-
 func main() {
+
+	w := world.NewWorld(20, 20, 1, false)
 
 	world.InitLogger()
 
@@ -26,7 +24,9 @@ func main() {
 
 	hubSocket := server.NewWebSocketHub()
 
-	svc := server.NewService(w)
+	ctrl := world.NewWorldController(w)
+
+	svc := server.NewService(ctrl)
 	svc.StartTick(500*time.Millisecond, hubSocket)
 
 	srv := &http.Server{

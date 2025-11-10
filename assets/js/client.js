@@ -34,7 +34,7 @@ function renderWorldAndStat(snapshot) {
     cells[y][x].className = "cell bg-green-400"
   }
 
-
+  // Render Obstacle
   for (let i = 0; i < snapshot.obstacles.length; i++) {
     const [x, y] = snapshot.obstacles[i];
     cells[y][x].className = "cell bg-stone-400"
@@ -58,13 +58,15 @@ function renderWorldAndStat(snapshot) {
       delete agentEls[agent.id]
       continue
     }
+
     if (!agentElement) {
       // Create Agent And Render
       let el = document.createElement("div")
-      el.className = "agent w-4 h-4 bg-red-500 absolute"
+      el.className = "agent w-4 h-4 bg-red-500 absolute new"
       worldEl.appendChild(el)
       agentEls[agent.id] = el
       agentElement = el
+      requestAnimationFrame(() => el.classList.remove("new"))
     }
 
     // Animate It

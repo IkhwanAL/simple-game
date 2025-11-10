@@ -25,14 +25,15 @@ And then type `make run`
 - Eat, Walk, Reproduction
 - Death
 - Add Trail For Path Finding (Need A Button To Be Able To Toggle)
+- Convert HTTP Pooling into Websocket
+- Smooth Animation
 
 ## Current Plan
 
-- Convert HTTP Pooling into Websocket
-- Smooth Animation
+- Convert This Mutex To Channel
+- Instead Dom Manipulation, change to use canvas
 
 ## Next Future Plan
 
 - Each Agent Able to Expand Conquer other Agent
-- The Current Right Now is heavily depends on Mutex, Might Convert it Into Channel
 

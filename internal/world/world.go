@@ -44,42 +44,6 @@ type World struct {
 	Agents      []*Agent
 	PendingDead []*Agent
 	DebugMode   bool
-
-	cmds chan WorldCommand
-}
-
-func (w *World) Tick() {
-	w.cmds <- WorldCommand{Action: "tick"}
-}
-
-func (w *World) SpawnFood() {
-	w.cmds <- WorldCommand{Action: "spawn_food"}
-}
-
-func (w *World) CaptureSnapshot() WorldSnapshot {
-	reply := make(chan any)
-	w.cmds <- WorldCommand{Action: "snapshot", Reply: reply}
-	return (<-reply).(WorldSnapshot)
-}
-
-func (w *World) SpawnAgent() {
-	w.cmds <- WorldCommand{Action: "spawn_agent"}
-}
-
-func (w *World) run() {
-	for cmd := range w.cmds {
-		switch cmd.Action {
-		case "tick":
-			w.tick()
-		case "spawn_agent":
-			agent := NewAgent(rand.IntN(w.Width-1), rand.IntN(w.Height-1), StartingEnergy)
-			w.AddAgent(agent)
-		case "spawn_food":
-			w.SpawnFood()
-		case "snapshot":
-			cmd.Reply <- w.Snapshot()
-		}
-	}
 }
 
 func NewWorld(width, height, starterAgent int, isDebugOn bool) *World {
@@ -87,7 +51,6 @@ func NewWorld(width, height, starterAgent int, isDebugOn bool) *World {
 		Height:    height,
 		Width:     width,
 		DebugMode: isDebugOn,
-		cmds:      make(chan WorldCommand, 32),
 	}
 
 	world.Grid = make([][]Cell, height)
@@ -111,7 +74,7 @@ func NewWorld(width, height, starterAgent int, isDebugOn bool) *World {
 
 	// Spawn Minim Food
 	for range width * height / 5 {
-		world.spawnFood()
+		world.SpawnFood()
 	}
 
 	freeCells := make([][2]int, 0)
@@ -141,8 +104,6 @@ func NewWorld(width, height, starterAgent int, isDebugOn bool) *World {
 
 	world.BornCount = starterAgent
 
-	go world.run()
-
 	return world
 }
 
@@ -150,7 +111,7 @@ func (w *World) AddAgent(a *Agent) {
 	w.Agents = append(w.Agents, a)
 }
 
-func (w *World) spawnFood() {
+func (w *World) SpawnFood() {
 	x, y := rand.IntN(w.Height), rand.IntN(w.Width)
 
 	if w.Grid[y][x].Type == Empty {
@@ -159,7 +120,7 @@ func (w *World) spawnFood() {
 	}
 }
 
-func (w *World) tick() {
+func (w *World) Tick() {
 	w.TickCount++
 
 	if len(w.PendingDead) > 0 {

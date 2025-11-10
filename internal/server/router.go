@@ -42,6 +42,8 @@ func Router(svc *Service, hub *WebSocketHub) http.Handler {
 			return
 		}
 
+		fmt.Println(conn.Subprotocol())
+
 		hub.AddConn(conn)
 		defer func() {
 			hub.RemoveConn(conn)

@@ -283,7 +283,7 @@ func (w *World) FindTheClosestFood(currentX, currentY int, a *Agent) (int, int, 
 				continue
 			}
 
-			if visited[ny][nx] == true {
+			if visited[ny][nx] {
 				continue
 			}
 

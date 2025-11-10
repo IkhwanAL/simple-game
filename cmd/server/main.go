@@ -13,11 +13,9 @@ import (
 	"github.com/ikhwanal/tinyworlds/internal/world"
 )
 
-var (
-	w = world.NewWorld(20, 20, 1, false)
-)
-
 func main() {
+
+	w := world.NewWorld(20, 20, 1, false)
 
 	world.InitLogger()
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"log"
-	"math/rand"
 	"sync"
 	"sync/atomic"
 
@@ -32,21 +31,14 @@ func NewService(w *world.World) *Service {
 }
 
 func (s *Service) Snapshot() world.WorldSnapshot {
-	return s.world.Snapshot()
+	return s.world.CaptureSnapshot()
 }
 
 func (s *Service) SpawnAgent() {
-	s.world.Mu.Lock()
-	defer s.world.Mu.Unlock()
-
-	agent := world.NewAgent(rand.Intn(s.world.Width-1), rand.Intn(s.world.Height-1), world.StartingEnergy)
-	s.world.AddAgent(agent)
+	s.world.SpawnAgent()
 }
 
 func (s *Service) SpawnFood() {
-	s.world.Mu.Lock()
-	defer s.world.Mu.Unlock()
-
 	s.world.SpawnFood()
 }
 

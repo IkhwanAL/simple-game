@@ -35,7 +35,7 @@ func main() {
 	}
 
 	go func() {
-		log.Println("Tiny World Start")
+		log.Println("Tiny World Start :8080")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Http Error %s", err.Error())
 		}

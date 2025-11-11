@@ -65,11 +65,13 @@ func NewWorld(width, height, starterAgent int, isDebugOn bool) *World {
 
 	minTotalObstacles = max(50, minTotalObstacles)
 
-	for range minTotalObstacles {
-		randX := rand.IntN(width - 1)
-		randY := rand.IntN(height - 1)
+	if !world.DebugMode {
+		for range minTotalObstacles {
+			randX := rand.IntN(width - 1)
+			randY := rand.IntN(height - 1)
 
-		world.Grid[randY][randX].Type = Obstacle
+			world.Grid[randY][randX].Type = Obstacle
+		}
 	}
 
 	// Spawn Minim Food

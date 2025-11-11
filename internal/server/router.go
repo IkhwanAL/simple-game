@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"runtime"
+	"time"
 
 	"github.com/coder/websocket"
 	"github.com/ikhwanal/tinyworlds/internal/world"
@@ -42,6 +43,7 @@ func Router(svc *Service, hub *WebSocketHub) http.Handler {
 			log.Println("failed to open socket")
 			return
 		}
+		defer conn.CloseNow()
 		log.Println("WebSocket accepted")
 
 		fmt.Println(conn.Subprotocol())
@@ -52,8 +54,10 @@ func Router(svc *Service, hub *WebSocketHub) http.Handler {
 			_ = conn.Close(websocket.StatusNormalClosure, "")
 		}()
 
-		ctx := context.Background()
 		for {
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*9)
+			defer cancel()
+
 			_, _, err := conn.Read(ctx)
 			if err != nil {
 				code := websocket.CloseStatus(err)

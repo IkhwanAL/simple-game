@@ -1,4 +1,4 @@
-import { connectWebSocket } from "./ws.js"
+import { latestSnapshot } from "./client.js"
 
 /**
  * @type {HTMLCanvasElement}
@@ -10,21 +10,16 @@ const cellSize = 16
 
 const agents = {}
 
-let latestSnapshot = null
+function renderLoop() {
+  if (!latestSnapshot) return requestAnimationFrame(renderLoop)
 
-connectWebSocket((snapshot) => {
-  latestSnapshot = snapshot
-})
+  renderWorld(latestSnapshot)
+  requestAnimationFrame(renderLoop)
+}
 
+requestAnimationFrame(renderLoop)
 
-function renderWorld() {
-  if (!latestSnapshot) {
-    requestAnimationFrame(renderWorld)
-    return
-  }
-
-  let snapshot = latestSnapshot
-
+export function renderWorld(snapshot) {
   context.fillStyle = "#1f2937"
   context.fillRect(0, 0, canvas.width, canvas.height)
 
@@ -70,8 +65,5 @@ function renderWorld() {
       delete agents[id]
     }
   }
-
-  requestAnimationFrame(renderWorld)
 }
 
-renderWorld()

@@ -82,3 +82,19 @@ func TestDieMechanism(t *testing.T) {
 		t.Errorf("Agent Is Still Alive")
 	}
 }
+
+func TestFindClosestFood(t *testing.T) {
+	w := world.NewWorld(20, 20, 1, true)
+	a := world.NewAgent(0, 0, 100)
+	w.AddAgent(a)
+
+	nextX, nextY, foundFood := w.FindTheClosestFood(a.X, a.Y, a)
+
+	if !foundFood {
+		t.Errorf("Agent can't find the food")
+	}
+
+	if nextX == 0 && nextY == 0 {
+		t.Errorf("Something There Food Should At Same Place as Agent Placement")
+	}
+}

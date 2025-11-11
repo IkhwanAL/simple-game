@@ -65,11 +65,13 @@ func NewWorld(width, height, starterAgent int, isDebugOn bool) *World {
 
 	minTotalObstacles = max(50, minTotalObstacles)
 
-	for range minTotalObstacles {
-		randX := rand.IntN(width - 1)
-		randY := rand.IntN(height - 1)
+	if !world.DebugMode {
+		for range minTotalObstacles {
+			randX := rand.IntN(width - 1)
+			randY := rand.IntN(height - 1)
 
-		world.Grid[randY][randX].Type = Obstacle
+			world.Grid[randY][randX].Type = Obstacle
+		}
 	}
 
 	// Spawn Minim Food
@@ -188,6 +190,7 @@ type WorldSnapshot struct {
 	Width      int             `json:"width"`
 	Height     int             `json:"height"`
 	Food       [][2]int        `json:"foods"`
+	AvgEnergy  float64         `json:"avgEnergy"`
 	Agents     []AgentSnapshot `json:"agents"`
 	Obstacle   [][2]int        `json:"obstacles"`
 	BornCount  int             `json:"bornCount"`
@@ -234,6 +237,7 @@ func (w *World) Snapshot() WorldSnapshot {
 
 	var agents []AgentSnapshot
 
+	sumEnergy := 0.0
 	for _, a := range w.Agents {
 		agents = append(agents, AgentSnapshot{
 			ID:     a.ID,
@@ -241,7 +245,10 @@ func (w *World) Snapshot() WorldSnapshot {
 			Y:      a.Y,
 			IsDead: a.IsDie,
 		})
+		sumEnergy += float64(a.Energy)
 	}
+
+	aCopy.AvgEnergy = sumEnergy / float64(len(w.Agents))
 
 	aCopy.Agents = agents
 	if aCopy.Agents == nil {

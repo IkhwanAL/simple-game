@@ -13,7 +13,7 @@ export function connectWebSocket(onMessage) {
   };
 
   socket.onclose = (err) => {
-    console.log(err.reason);
+    console.dir(err);
 
     console.log("❌ Disconnected from WebSocket");
 

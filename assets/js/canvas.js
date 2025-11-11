@@ -45,21 +45,30 @@ function renderWorld() {
   for (let index = 0; index < snapshot.agents.length; index++) {
     const { id, x, y, isDead } = snapshot.agents[index];
 
-    if (isDead) {
-      delete agents[id]
-      continue
+    let prev = agents[id]
+    // To Prevent Inherit Previous State
+    if (!prev) {
+      prev = { x, y, opacity: 0 }
+      agents[id] = prev
     }
-
-    const prev = agents[id] || { x, y }
 
     // An Act to Move Toward Target But Slowly Instead of Teleport
     const smoothX = prev.x + (x - prev.x) * 0.25 // Linear interpolation
     const smoothY = prev.y + (y - prev.y) * 0.25 // Linear Interpolation 
 
-    agents[id] = { x: smoothX, y: smoothY }
+    const targetOpacity = isDead ? 0 : 1;
+    const smoothOpacity = prev.opacity + (targetOpacity - prev.opacity) * 0.1
 
+    agents[id] = { x: smoothX, y: smoothY, opacity: smoothOpacity }
+
+    context.globalAlpha = smoothOpacity
     context.fillStyle = "#ef4444"
     context.fillRect(smoothX * cellSize, smoothY * cellSize, cellSize, cellSize)
+    context.globalAlpha = 1
+
+    if (agents[id].opacity < 0.05 && isDead) {
+      delete agents[id]
+    }
   }
 
   requestAnimationFrame(renderWorld)

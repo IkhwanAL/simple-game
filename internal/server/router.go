@@ -34,6 +34,7 @@ func Router(svc *Service, hub *WebSocketHub) http.Handler {
 	ControlRouter(mux, svc)
 
 	mux.HandleFunc("/listen", func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("Incoming websocket request from %s", r.RemoteAddr)
 		conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
 			InsecureSkipVerify: true,
 		})
@@ -41,6 +42,7 @@ func Router(svc *Service, hub *WebSocketHub) http.Handler {
 			log.Println("failed to open socket")
 			return
 		}
+		log.Println("WebSocket accepted")
 
 		fmt.Println(conn.Subprotocol())
 

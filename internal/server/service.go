@@ -99,6 +99,7 @@ var stopOne sync.Once
 
 func (s *Service) Stop() {
 	stopOne.Do(func() {
+		s.crtl.Stop()
 		log.Println("Calling Stop()")
 		close(s.stopChan)
 	})

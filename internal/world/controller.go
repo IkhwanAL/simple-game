@@ -1,6 +1,9 @@
 package world
 
-import "math/rand/v2"
+import (
+	"log"
+	"math/rand/v2"
+)
 
 type WorldController struct {
 	world    *World
@@ -36,6 +39,8 @@ func (c *WorldController) loop() {
 			case CmdStop:
 				close(c.stopChan)
 				return
+			default:
+				log.Println("incorrect type to accept")
 			}
 		case <-c.stopChan:
 			return

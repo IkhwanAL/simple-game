@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -46,8 +47,6 @@ func Router(svc *Service, hub *WebSocketHub) http.Handler {
 		defer conn.CloseNow()
 		log.Println("WebSocket accepted")
 
-		fmt.Println(conn.Subprotocol())
-
 		hub.AddConn(conn)
 		defer func() {
 			hub.RemoveConn(conn)
@@ -55,10 +54,10 @@ func Router(svc *Service, hub *WebSocketHub) http.Handler {
 		}()
 
 		for {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second*9)
-			defer cancel()
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 
-			_, _, err := conn.Read(ctx)
+			_, info, err := conn.Read(ctx)
+			cancel()
 			if err != nil {
 				code := websocket.CloseStatus(err)
 				if code == websocket.StatusGoingAway || code == websocket.StatusNormalClosure {
@@ -66,6 +65,20 @@ func Router(svc *Service, hub *WebSocketHub) http.Handler {
 				}
 				log.Printf("websocket read error: %v (code=%v)", err, code)
 				return
+			}
+
+			var received struct {
+				Type string
+			}
+
+			err = json.Unmarshal(info, &received)
+			if err != nil {
+				log.Printf("failed to receive information from client\n")
+				return
+			}
+
+			if received.Type == "ping" {
+				continue
 			}
 		}
 	})

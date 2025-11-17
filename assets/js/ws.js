@@ -12,6 +12,11 @@ export function connectWebSocket(onMessage) {
     onMessage(snapshot);
   };
 
+  setInterval(() => {
+    const imAlive = { "Type": "ping" }
+    socket.send(JSON.stringify(imAlive))
+  }, 1000 * 5)
+
   socket.onclose = (err) => {
     console.dir(err);
 

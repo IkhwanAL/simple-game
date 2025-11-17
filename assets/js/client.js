@@ -1,24 +1,27 @@
 import { connectWebSocket } from "./ws.js"
 
 const statsEl = document.getElementById("stats")
-let lastUpdate = 0
-export let latestSnapshot = null
+
+export let lastUpdate = 0
+export let timeInterval = 500
+export let prevSnapshot = null
+export let nextSnapshot = null
 
 connectWebSocket((snapshot) => {
-  latestSnapshot = snapshot
+  prevSnapshot = nextSnapshot
+
+  nextSnapshot = snapshot
 
   const now = performance.now();
+  lastUpdate = now
 
-  if ((now - lastUpdate) > 250) {
-    statsEl.textContent = `
-      Tick: ${snapshot.tick} |
-      AvgEnergy: ${snapshot.avgEnergy} |
-      Alive: ${snapshot.agents.length} |
-      Born: ${snapshot.bornCount} |
-      Dead: ${snapshot.deathCount}
-    `
-    lastUpdate = now
-  }
+  statsEl.textContent = `
+    Tick: ${snapshot.tick} |
+    AvgEnergy: ${snapshot.avgEnergy} |
+    Alive: ${snapshot.agents.length} |
+    Born: ${snapshot.bornCount} |
+    Dead: ${snapshot.deathCount}
+  `
 })
 
 

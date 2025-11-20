@@ -33,12 +33,17 @@ func speedUpHandler(service *Service) http.HandlerFunc {
 			fmt.Fprint(w, err)
 			return
 		}
-		cur := service.Interval
-		newTick := cur / 2
 
-		if newTick > 200*time.Millisecond {
-			service.ChangeSpeed(newTick)
-		}
+		speedUp(service)
+	}
+}
+
+func speedUp(service *Service) {
+	cur := service.Interval
+	newTick := cur / 2
+
+	if newTick > 200*time.Millisecond {
+		service.ChangeSpeed(newTick)
 	}
 }
 
@@ -49,12 +54,16 @@ func speedDownHandler(service *Service) http.HandlerFunc {
 			fmt.Fprint(w, err)
 			return
 		}
-		cur := service.Interval
-		newTick := cur * 2
+		speedDown(service)
+	}
+}
 
-		if cur < 2*time.Second {
-			service.ChangeSpeed(newTick)
-		}
+func speedDown(service *Service) {
+	cur := service.Interval
+	newTick := cur * 2
+
+	if cur < 2*time.Second {
+		service.ChangeSpeed(newTick)
 	}
 }
 

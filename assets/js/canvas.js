@@ -1,4 +1,4 @@
-import { latestSnapshot } from "./client.js"
+import { nextSnapshot, prevSnapshot, lastUpdate } from "./client.js"
 
 /**
  * @type {HTMLCanvasElement}
@@ -8,20 +8,27 @@ const context = canvas.getContext("2d")
 
 const cellSize = 16
 
-const agents = {}
-
 function renderLoop() {
-  if (!latestSnapshot) return requestAnimationFrame(renderLoop)
+  if (!prevSnapshot || !nextSnapshot) return requestAnimationFrame(renderLoop)
 
-  renderWorld(latestSnapshot)
+  const tickInterval = nextSnapshot.tickInterval
+
+  const elapsed = performance.now() - lastUpdate
+  let interpolation = Math.min(elapsed / tickInterval, 1)
+
+  renderWorld(prevSnapshot, nextSnapshot, interpolation)
   requestAnimationFrame(renderLoop)
 }
 
 requestAnimationFrame(renderLoop)
 
-export function renderWorld(snapshot) {
+let agentStore = {}
+
+export function renderWorld(prevSnapshot, nextSnapshot, interpolation) {
   context.fillStyle = "#1f2937"
   context.fillRect(0, 0, canvas.width, canvas.height)
+
+  const snapshot = nextSnapshot
 
   // Render Food
   context.fillStyle = "#4ade80" // green-400
@@ -38,31 +45,37 @@ export function renderWorld(snapshot) {
   }
 
   for (let index = 0; index < snapshot.agents.length; index++) {
-    const { id, x, y, isDead } = snapshot.agents[index];
+    const agent = snapshot.agents[index];
 
-    let prev = agents[id]
-    // To Prevent Inherit Previous State
-    if (!prev) {
-      prev = { x, y, opacity: 0 }
-      agents[id] = prev
-    }
+
+    let prevAgent = prevSnapshot.agents.find((item) => item.id === agent.id)
+
+    let startX = prevAgent ? prevAgent.x : agent.x
+    let startY = prevAgent ? prevAgent.y : agent.y
 
     // An Act to Move Toward Target But Slowly Instead of Teleport
-    const smoothX = prev.x + (x - prev.x) * 0.25 // Linear interpolation
-    const smoothY = prev.y + (y - prev.y) * 0.25 // Linear Interpolation 
+    const smoothX = startX + (agent.x - startX) * interpolation // Linear interpolation
+    const smoothY = startY + (agent.y - startY) * interpolation // Linear Interpolation 
 
-    const targetOpacity = isDead ? 0 : 1;
-    const smoothOpacity = prev.opacity + (targetOpacity - prev.opacity) * 0.1
+    const targetOpacity = agent.isDead ? 0 : 1;
 
-    agents[id] = { x: smoothX, y: smoothY, opacity: smoothOpacity }
+    if (!agentStore[agent.id]) {
+      agentStore[agent.id] = { opacity: 0 }
+    }
+
+    const startOpacityValue = agentStore[agent.id] ? agentStore[agent.id].opacity : targetOpacity
+
+    const smoothOpacity = startOpacityValue + (targetOpacity - startOpacityValue) * interpolation
+
+    agentStore[agent.id].opacity = smoothOpacity
 
     context.globalAlpha = smoothOpacity
     context.fillStyle = "#ef4444"
     context.fillRect(smoothX * cellSize, smoothY * cellSize, cellSize, cellSize)
     context.globalAlpha = 1
 
-    if (agents[id].opacity < 0.05 && isDead) {
-      delete agents[id]
+    if (agentStore[agent.id].opacity < 0.05 && agent.isDead) {
+      delete agentStore[agent.id]
     }
   }
 }

@@ -186,15 +186,16 @@ func (w *World) RemoveAgent(target *Agent) {
 }
 
 type WorldSnapshot struct {
-	Tick       int             `json:"tick"`
-	Width      int             `json:"width"`
-	Height     int             `json:"height"`
-	Food       [][2]int        `json:"foods"`
-	AvgEnergy  float64         `json:"avgEnergy"`
-	Agents     []AgentSnapshot `json:"agents"`
-	Obstacle   [][2]int        `json:"obstacles"`
-	BornCount  int             `json:"bornCount"`
-	DeathCount int             `json:"deathCount"`
+	Tick         int             `json:"tick"`
+	Width        int             `json:"width"`
+	Height       int             `json:"height"`
+	Food         [][2]int        `json:"foods"`
+	AvgEnergy    float64         `json:"avgEnergy"`
+	Agents       []AgentSnapshot `json:"agents"`
+	Obstacle     [][2]int        `json:"obstacles"`
+	BornCount    int             `json:"bornCount"`
+	DeathCount   int             `json:"deathCount"`
+	TickInterval int64           `json:"tickInterval"`
 }
 
 type AgentSnapshot struct {

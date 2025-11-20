@@ -1,4 +1,4 @@
-import { nextSnapshot, prevSnapshot, lastUpdate, timeInterval } from "./client.js"
+import { nextSnapshot, prevSnapshot, lastUpdate } from "./client.js"
 
 /**
  * @type {HTMLCanvasElement}
@@ -11,14 +11,18 @@ const cellSize = 16
 function renderLoop() {
   if (!prevSnapshot || !nextSnapshot) return requestAnimationFrame(renderLoop)
 
+  const tickInterval = nextSnapshot.tickInterval
+
   const elapsed = performance.now() - lastUpdate
-  let interpolation = Math.min(elapsed / timeInterval, 1)
+  let interpolation = Math.min(elapsed / tickInterval, 1)
 
   renderWorld(prevSnapshot, nextSnapshot, interpolation)
   requestAnimationFrame(renderLoop)
 }
 
 requestAnimationFrame(renderLoop)
+
+let agentStore = {}
 
 export function renderWorld(prevSnapshot, nextSnapshot, interpolation) {
   context.fillStyle = "#1f2937"
@@ -43,6 +47,7 @@ export function renderWorld(prevSnapshot, nextSnapshot, interpolation) {
   for (let index = 0; index < snapshot.agents.length; index++) {
     const agent = snapshot.agents[index];
 
+
     let prevAgent = prevSnapshot.agents.find((item) => item.id === agent.id)
 
     let startX = prevAgent ? prevAgent.x : agent.x
@@ -54,14 +59,24 @@ export function renderWorld(prevSnapshot, nextSnapshot, interpolation) {
 
     const targetOpacity = agent.isDead ? 0 : 1;
 
-    const startOpacityValue = prevAgent ? prevAgent.opacity : targetOpacity
+    if (!agentStore[agent.id]) {
+      agentStore[agent.id] = { opacity: 0 }
+    }
+
+    const startOpacityValue = agentStore[agent.id] ? agentStore[agent.id].opacity : targetOpacity
 
     const smoothOpacity = startOpacityValue + (targetOpacity - startOpacityValue) * interpolation
+
+    agentStore[agent.id].opacity = smoothOpacity
 
     context.globalAlpha = smoothOpacity
     context.fillStyle = "#ef4444"
     context.fillRect(smoothX * cellSize, smoothY * cellSize, cellSize, cellSize)
     context.globalAlpha = 1
+
+    if (agentStore[agent.id].opacity < 0.05 && agent.isDead) {
+      delete agentStore[agent.id]
+    }
   }
 }
 

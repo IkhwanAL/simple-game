@@ -65,6 +65,9 @@ func (s *Service) StartTick(interval time.Duration, hub *WebSocketHub) {
 				s.crtl.CmdChan <- world.CmdTick{}
 
 				snapshot := s.Snapshot()
+
+				snapshot.TickInterval = s.Interval.Milliseconds()
+
 				msg, err := json.Marshal(snapshot)
 				if err != nil {
 					log.Fatal(err)

@@ -1,9 +1,8 @@
-import { connectWebSocket } from "./ws.js"
+import { connectWebSocket, socket } from "./ws.js"
 
 const statsEl = document.getElementById("stats")
 
 export let lastUpdate = 0
-export let timeInterval = 500
 export let prevSnapshot = null
 export let nextSnapshot = null
 

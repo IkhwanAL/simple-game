@@ -1,8 +1,11 @@
 package world
 
 import (
+	"container/list"
 	"errors"
+	"fmt"
 	"math/rand/v2"
+	"slices"
 	"sync/atomic"
 )
 
@@ -17,25 +20,56 @@ var DIRS = [4][2]int{
 
 var nextAgentId atomic.Int64
 
+type Trait struct {
+	Base    uint8
+	Current uint8
+}
+
 type Agent struct {
-	ID     int
-	X, Y   int
-	Energy int
-	IsDie  bool
-	Dir    [2]int
-	Path   []Chord
+	ID            int
+	X, Y          int
+	Energy        int
+	IsDie         bool
+	Dir           [2]int
+	Path          []Chord
+	Greed         Trait
+	Curios        Trait
+	Lazy          Trait
+	FieldOfVision int
+	Color         string
 }
 
 func newAgentID() int {
 	return int(nextAgentId.Add(1))
 }
 
+var maxTraitValue uint8 = (1 << 8) - 1
+
+var baseValue uint8 = 128
+
 func NewAgent(x, y, energy int) *Agent {
+	greed := uint8(rand.IntN(int(maxTraitValue)))
+	curious := uint8(rand.IntN(int(maxTraitValue)))
+	lazy := uint8(rand.IntN(int(maxTraitValue)))
+
 	direction := [][2]int{UP, DOWN, LEFT, RIGHT}
 	startingDirection := direction[rand.IntN(len(direction))]
 	id := newAgentID()
 
-	return &Agent{ID: id, X: x, Y: y, Energy: energy, Dir: startingDirection}
+	color := fmt.Sprintf("%x%x%x", greed, curious, lazy)
+
+	return &Agent{
+		ID:            id,
+		X:             x,
+		Y:             y,
+		Energy:        energy,
+		Dir:           startingDirection,
+		Greed:         Trait{Base: max(baseValue, greed), Current: max(baseValue, greed)},
+		Curios:        Trait{Base: max(baseValue, curious), Current: max(baseValue, curious)},
+		Lazy:          Trait{Base: max(baseValue, lazy), Current: max(baseValue, lazy)},
+		FieldOfVision: 3,
+		Color:         color,
+	}
 }
 
 func (a *Agent) Eat(w *World) {
@@ -90,7 +124,6 @@ func (a *Agent) MoveAiminglessly(w *World) (int, int) {
 		return a.X, a.Y
 	}
 	nx, ny := nextMove[0], nextMove[1]
-	a.ReduceEnergy()
 	return nx, ny
 }
 
@@ -154,4 +187,93 @@ func (a *Agent) Die(w *World) {
 		w.DeathCount++
 		w.PendingDead = append(w.PendingDead, a)
 	}
+}
+
+func (a *Agent) GreedControl() {
+	// Low on Resource
+	if a.Energy < 15 {
+		currentGreed := a.Greed.Current
+		nextPossibleGreed := currentGreed + 10
+
+		if nextPossibleGreed > maxTraitValue {
+			return
+		}
+		a.Greed.Current += 10
+	}
+}
+
+func (a *Agent) SniffForFood(w *World) bool {
+	type Node struct {
+		Chord Chord
+		Dist  int
+	}
+
+	var visited map[Chord]bool = make(map[Chord]bool)
+	var parent map[Chord]Chord = make(map[Chord]Chord)
+
+	queue := list.New()
+
+	start := Chord{x: a.X, y: a.Y}
+
+	current := Node{Chord: start, Dist: 0}
+
+	queue.PushBack(current) // Current Agent Position
+
+	var target *Chord
+
+	for queue.Len() > 0 {
+		node := queue.Remove(queue.Front()).(Node)
+		cur := node.Chord
+		visited[cur] = true
+
+		if node.Dist > 0 && (cur.x != a.X || cur.y != a.Y) && w.Grid[cur.y][cur.x].Type == Food {
+			target = &cur
+			break
+		}
+
+		for _, d := range DIRS {
+			nx, ny := cur.x+d[0], cur.y+d[1]
+
+			next := Chord{x: nx, y: ny}
+
+			if w.OutOfBound(nx, ny) {
+				continue
+			}
+
+			if visited[next] {
+				continue
+			}
+
+			if w.Grid[ny][nx].Type == Obstacle || w.Grid[ny][nx].Type == AgentEn {
+				continue
+			}
+
+			dist := node.Dist + 1
+			// This Will Create Diamond Shape Field Of Vision
+			if dist > a.FieldOfVision {
+				continue
+			}
+
+			tempNode := Node{Chord: next, Dist: dist}
+			parent[next] = cur
+			queue.PushBack(tempNode)
+		}
+	}
+
+	if target == nil {
+		return false
+	}
+
+	path := []Chord{}
+	t := *target
+
+	for t != start {
+		path = append(path, t)
+		t = parent[t]
+	}
+
+	slices.Reverse(path)
+
+	a.Path = path
+	return true
 }

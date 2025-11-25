@@ -9,6 +9,9 @@ const context = canvas.getContext("2d")
 const cellSize = 16
 
 function renderLoop() {
+
+  // Snapshot Buffering 
+
   if (!prevSnapshot || !nextSnapshot) return requestAnimationFrame(renderLoop)
 
   const tickInterval = nextSnapshot.tickInterval

@@ -1,7 +1,6 @@
 package world
 
 import (
-	"container/list"
 	"math/rand/v2"
 )
 
@@ -74,7 +73,6 @@ func NewWorld(width, height, starterAgent int, isDebugOn bool) *World {
 		}
 	}
 
-	// Spawn Minim Food
 	for range width * height / 5 {
 		world.SpawnFood()
 	}
@@ -140,13 +138,21 @@ func (w *World) Tick() {
 		}
 
 		prevX, prevY := a.X, a.Y
-		nextX, nextY, found := w.FindTheClosestFood(a.X, a.Y, a)
+
+		var nextX, nextY int
+
+		found := a.SniffForFood(w)
 
 		if found {
-			a.ReduceEnergy()
+			nextX = a.Path[0].x
+			nextY = a.Path[0].y
 		} else {
+			// TODO: Here can be Improve by Increase Field of Vision if it wandering too long
 			nextX, nextY = a.MoveAiminglessly(w)
 		}
+
+		a.ReduceEnergy()
+
 		a.SetAgentPosition(nextX, nextY)
 
 		if len(a.Path) > 0 {
@@ -259,67 +265,13 @@ func (w *World) Snapshot() WorldSnapshot {
 	return aCopy
 }
 
-type Chord struct {
-	x, y int
+func (w *World) OutOfBound(x, y int) bool {
+	if x < 0 || x >= w.Width || y < 0 || y >= w.Height {
+		return true
+	}
+	return false
 }
 
-func (w *World) FindTheClosestFood(currentX, currentY int, a *Agent) (int, int, bool) {
-	visited := make([][]bool, w.Height)
-	for i := range visited {
-		visited[i] = make([]bool, w.Width)
-	}
-
-	q := list.New()
-	q.PushBack(Chord{x: currentX, y: currentY})
-	visited[currentY][currentX] = true
-
-	parent := map[[2]int][2]int{}
-	var target *Chord
-
-	for q.Len() > 0 {
-		cur := q.Remove(q.Front()).(Chord)
-
-		if (cur.x != currentX || cur.y != currentY) && w.Grid[cur.y][cur.x].Type == Food {
-			target = &cur
-			break
-		}
-
-		for _, d := range DIRS {
-			nx, ny := cur.x+d[0], cur.y+d[1]
-
-			if nx < 0 || nx >= w.Width || ny < 0 || ny >= w.Height {
-				continue
-			}
-
-			if visited[ny][nx] {
-				continue
-			}
-
-			if w.Grid[ny][nx].Type == Obstacle || w.Grid[ny][nx].Type == AgentEn {
-				continue
-			}
-
-			visited[ny][nx] = true
-			parent[[2]int{nx, ny}] = [2]int{cur.x, cur.y}
-			q.PushBack(Chord{x: nx, y: ny})
-		}
-	}
-
-	if target == nil {
-		return currentX, currentY, false
-	}
-
-	px, py := target.x, target.y
-	for !(px == currentX && py == currentY) {
-		a.Path = append(a.Path, Chord{px, py})
-		pxpy := parent[[2]int{px, py}]
-		px, py = pxpy[0], pxpy[1]
-	}
-
-	// reverse path so it's from agent → food
-	for i := 0; i < len(a.Path)/2; i++ {
-		a.Path[i], a.Path[len(a.Path)-1-i] = a.Path[len(a.Path)-1-i], a.Path[i]
-	}
-
-	return a.Path[0].x, a.Path[0].y, true
+type Chord struct {
+	x, y int
 }

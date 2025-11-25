@@ -14,7 +14,7 @@ Atomic -> is more like special CPU instruction allowed them to change value in m
 
 ## How to Run
 
-Need to have `make` command. To install `make`, look at google. (Don't Be Lazy)
+Need to have `make` command. To install `make`, look at google. (Don't Be Lazy, there's an AI you can ask)
 
 And then type `make run`
 
@@ -27,11 +27,23 @@ And then type `make run`
 - Add Trail For Path Finding (Need A Button To Be Able To Toggle)
 - Convert HTTP Pooling into Websocket
 - Smooth Animation
+- Convert This Mutex To Channel
+- Instead Dom Manipulation, change to use canvas manipulation
+- Each Agent Have Field Of Vision 
+  - This will make agent wander around to find a food
 
 ## Current Plan
 
-- Convert This Mutex To Channel
-- Instead Dom Manipulation, change to use canvas
+- Manage to fix the sudden close websocket, now websocket took time to connect, when start a new.
+- Add Custom Personality for Each Agent
+  - Personality Will Have 3 Trait, Greed (Represent Red), Curiosity (Represent Green), Lazy (Represent Blue) // Max Value 255
+    - Each Trait Will Be Use To Color the Agent
+    - Each Move Will Unique Depend On Value Combination of 3 Value
+      - Each Trait will show how agent approach something
+- Since now There Field Of Vision
+  - How do i make them think strategize in small window vision, when energy is depleted
+  - I do want to make sure the able to remap food location (but sudden realize it too difficult right now)
+    - Why Remap? Because since there possible the agent not interest to eat the food (want to explore or wander around) i want them to just remember the location
 
 ## Next Future Plan
 

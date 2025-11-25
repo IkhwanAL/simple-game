@@ -83,18 +83,71 @@ func TestDieMechanism(t *testing.T) {
 	}
 }
 
-func TestFindClosestFood(t *testing.T) {
+func removeAllFood(w *world.World) {
+	for y := range w.Height {
+		for x := range w.Width {
+			if w.Grid[y][x].Type == world.Food {
+				w.Grid[y][x].Type = world.Empty
+			}
+		}
+	}
+}
+
+func spawnOneFood(w *world.World, a *world.Agent, distanceFood int) {
+	agentX, agentY := a.X, a.Y
+
+	w.Grid[agentY+distanceFood][agentX+distanceFood].Type = world.Food
+}
+
+func TestAgentToDetectFood(t *testing.T) {
 	w := world.NewWorld(20, 20, 1, true)
+	removeAllFood(w)
+
 	a := world.NewAgent(0, 0, 100)
+	spawnOneFood(w, a, 1)
+
 	w.AddAgent(a)
 
-	nextX, nextY, foundFood := w.FindTheClosestFood(a.X, a.Y, a)
+	// Test Detect Closest Food And Able to Found Food
+	foundFood := a.SniffForFood(w)
 
 	if !foundFood {
-		t.Errorf("Agent can't find the food")
+		t.Errorf("Agent is blind can't find a food even i already put a close food near agent")
 	}
 
-	if nextX == 0 && nextY == 0 {
-		t.Errorf("Something There Food Should At Same Place as Agent Placement")
+	// Test Detect Closest Food But No Food Found
+	removeAllFood(w)
+
+	foundFood = a.SniffForFood(w)
+
+	if foundFood {
+		t.Errorf("Agent Find an invisible food which is impossible")
+	}
+}
+
+func TestAgentVisionFieldOfView(t *testing.T) {
+	w := world.NewWorld(20, 20, 1, true)
+	removeAllFood(w)
+
+	a := world.NewAgent(0, 0, 100)
+
+	a.FieldOfVision += 4
+
+	spawnOneFood(w, a, 4)
+
+	w.AddAgent(a)
+
+	foundFood := a.SniffForFood(w)
+
+	if foundFood {
+		t.Errorf("Agent is blind need a glasess here, the vision is not working")
+	}
+
+	a.FieldOfVision -= 4
+
+	foundFood = a.SniffForFood(w)
+
+	if foundFood {
+		t.Errorf("Agent is suppose to be blind here, the vision is not working")
 	}
 }

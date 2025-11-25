@@ -188,6 +188,9 @@
   .collapse {
     visibility: collapse;
   }
+  .invisible {
+    visibility: hidden;
+  }
   .relative {
     position: relative;
   }

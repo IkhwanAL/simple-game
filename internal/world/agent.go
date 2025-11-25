@@ -189,19 +189,6 @@ func (a *Agent) Die(w *World) {
 	}
 }
 
-func (a *Agent) GreedControl() {
-	// Low on Resource
-	if a.Energy < 15 {
-		currentGreed := a.Greed.Current
-		nextPossibleGreed := currentGreed + 10
-
-		if nextPossibleGreed > maxTraitValue {
-			return
-		}
-		a.Greed.Current += 10
-	}
-}
-
 func (a *Agent) SniffForFood(w *World) bool {
 	type Node struct {
 		Chord Chord

@@ -36,8 +36,8 @@ And then type `make run`
 
 - Manage to fix the sudden close websocket, now websocket took time to connect, when start a new.
 - Add Custom Personality for Each Agent
-  - Personality Will Have 3 Trait, Greed (Represent Red), Curiosity (Represent Green), Lazy (Represent Blue) // Max Value 255
-    - Each Trait Will Be Use To Color the Agent
+  - Personality Will Have 3 Trait, Greed, Curiosity, Lazy // Max Value 255
+    - Each Agent Will Have Color of it's own (but the one from reproduction will have same color)
     - Each Move Will Unique Depend On Value Combination of 3 Value
       - Each Trait will show how agent approach something
 - Since now There Field Of Vision
@@ -49,3 +49,8 @@ And then type `make run`
 
 - Each Agent Able to Expand Conquer other Agent
 
+### Agent Trait
+
+- Greed -> Constantly Try To Hoard Food
+- Curios -> More Exploring than Hoarding Food
+- Lazy -> doesn't like to move too much until it necessary

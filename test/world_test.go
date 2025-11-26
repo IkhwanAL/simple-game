@@ -7,7 +7,15 @@ import (
 )
 
 func TestAgentMovement(t *testing.T) {
-	w := world.NewWorld(20, 20, 0, false)
+
+	init := world.InitWorld{
+		Width:        20,
+		Height:       20,
+		StarterAgent: 0,
+		IsDebugOn:    false,
+	}
+
+	w := world.NewWorld(init)
 	agent := world.NewAgent(5, 5, 10)
 
 	w.AddAgent(agent)
@@ -20,7 +28,13 @@ func TestAgentMovement(t *testing.T) {
 }
 
 func TestFoodSpawn(t *testing.T) {
-	w := world.NewWorld(20, 20, 0, false)
+	init := world.InitWorld{
+		Width:        20,
+		Height:       20,
+		StarterAgent: 0,
+		IsDebugOn:    false,
+	}
+	w := world.NewWorld(init)
 
 	for range 5 {
 		w.Tick()
@@ -37,8 +51,15 @@ func TestFoodSpawn(t *testing.T) {
 }
 
 func TestReproductionMechanism(t *testing.T) {
-	w := world.NewWorld(20, 20, 0, true)
+	init := world.InitWorld{
+		Width:        20,
+		Height:       20,
+		StarterAgent: 0,
+		IsDebugOn:    true,
+	}
+	w := world.NewWorld(init)
 	a := world.NewAgent(0, 0, 10)
+
 	w.AddAgent(a)
 
 	a.Energy = 20
@@ -51,7 +72,13 @@ func TestReproductionMechanism(t *testing.T) {
 }
 
 func TestDieMechanismAsync(t *testing.T) {
-	w := world.NewWorld(20, 20, 0, false)
+	init := world.InitWorld{
+		Width:        20,
+		Height:       20,
+		StarterAgent: 0,
+		IsDebugOn:    false,
+	}
+	w := world.NewWorld(init)
 	a := world.NewAgent(0, 0, 10)
 	w.AddAgent(a)
 
@@ -72,7 +99,13 @@ func TestDieMechanismAsync(t *testing.T) {
 }
 
 func TestDieMechanism(t *testing.T) {
-	w := world.NewWorld(20, 20, 0, false)
+	init := world.InitWorld{
+		Width:        20,
+		Height:       20,
+		StarterAgent: 0,
+		IsDebugOn:    false,
+	}
+	w := world.NewWorld(init)
 	a := world.NewAgent(0, 0, 10)
 	w.AddAgent(a)
 
@@ -100,7 +133,13 @@ func spawnOneFood(w *world.World, a *world.Agent, distanceFood int) {
 }
 
 func TestAgentToDetectFood(t *testing.T) {
-	w := world.NewWorld(20, 20, 1, true)
+	init := world.InitWorld{
+		Width:        20,
+		Height:       20,
+		StarterAgent: 1,
+		IsDebugOn:    true,
+	}
+	w := world.NewWorld(init)
 	removeAllFood(w)
 
 	a := world.NewAgent(0, 0, 100)
@@ -126,7 +165,13 @@ func TestAgentToDetectFood(t *testing.T) {
 }
 
 func TestAgentVisionFieldOfView(t *testing.T) {
-	w := world.NewWorld(20, 20, 1, true)
+	init := world.InitWorld{
+		Width:        20,
+		Height:       20,
+		StarterAgent: 1,
+		IsDebugOn:    true,
+	}
+	w := world.NewWorld(init)
 	removeAllFood(w)
 
 	a := world.NewAgent(0, 0, 100)

@@ -13,6 +13,7 @@ const (
 	Food
 	AgentEn
 	Obstacle
+	BuffIncreaseFoV
 )
 
 const (
@@ -45,11 +46,22 @@ type World struct {
 	DebugMode   bool
 }
 
-func NewWorld(width, height, starterAgent int, isDebugOn bool) *World {
+type InitWorld struct {
+	Width         int
+	Height        int
+	StarterAgent  int
+	IsDebugOn     bool // Remove All Obstacle
+	totalInitBuff int
+}
+
+func NewWorld(init InitWorld) *World {
+	height := init.Height
+	width := init.Width
+
 	world := &World{
 		Height:    height,
 		Width:     width,
-		DebugMode: isDebugOn,
+		DebugMode: init.IsDebugOn,
 	}
 
 	world.Grid = make([][]Cell, height)
@@ -77,6 +89,10 @@ func NewWorld(width, height, starterAgent int, isDebugOn bool) *World {
 		world.SpawnFood()
 	}
 
+	for range init.totalInitBuff {
+		world.SpawnBuff()
+	}
+
 	freeCells := make([][2]int, 0)
 
 	for y := range height {
@@ -93,7 +109,7 @@ func NewWorld(width, height, starterAgent int, isDebugOn bool) *World {
 		freeCells[i], freeCells[j] = freeCells[j], freeCells[i]
 	})
 
-	for i := range starterAgent {
+	for i := range init.StarterAgent {
 		location := freeCells[i]
 		x, y := location[0], location[1]
 		agent := NewAgent(x, y, StartingEnergy)
@@ -102,7 +118,7 @@ func NewWorld(width, height, starterAgent int, isDebugOn bool) *World {
 		world.Grid[y][x].Type = AgentEn
 	}
 
-	world.BornCount = starterAgent
+	world.BornCount = init.StarterAgent
 
 	return world
 }
@@ -117,6 +133,14 @@ func (w *World) SpawnFood() {
 	if w.Grid[y][x].Type == Empty {
 		w.Grid[y][x].Type = Food
 		w.AmountFood += 1
+	}
+}
+
+func (w *World) SpawnBuff() {
+	x, y := rand.IntN(w.Height), rand.IntN(w.Width)
+
+	if w.Grid[y][x].Type == Empty {
+		w.Grid[y][x].Type = BuffIncreaseFoV
 	}
 }
 
@@ -141,19 +165,16 @@ func (w *World) Tick() {
 
 		var nextX, nextY int
 
-		found := a.SniffForFood(w)
+		a.TraitControl()
 
-		if found {
-			nextX = a.Path[0].x
-			nextY = a.Path[0].y
-		} else {
-			// TODO: Here can be Improve by Increase Field of Vision if it wandering too long
-			nextX, nextY = a.MoveAiminglessly(w)
+		act := a.ChooseAction()
+
+		nextX, nextY = a.PerformAction(w, act)
+
+		if nextX != prevX || nextY != prevY {
+			a.ReduceEnergy()
+			a.SetAgentPosition(nextX, nextY)
 		}
-
-		a.ReduceEnergy()
-
-		a.SetAgentPosition(nextX, nextY)
 
 		if len(a.Path) > 0 {
 			a.Path = a.Path[1:]
@@ -175,7 +196,7 @@ func (w *World) Tick() {
 	}
 
 	growth := rand.IntN(1000)
-	if growth < 25 {
+	if growth < 250 {
 		w.SpawnFood()
 	}
 }

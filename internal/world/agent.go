@@ -45,7 +45,7 @@ func newAgentID() int {
 
 var maxTraitValue uint8 = (1 << 8) - 1
 
-var baseValue uint8 = 128
+var baseValue uint8 = 100
 
 func NewAgent(x, y, energy int) *Agent {
 	greed := uint8(rand.IntN(int(maxTraitValue)))
@@ -263,4 +263,72 @@ func (a *Agent) SniffForFood(w *World) bool {
 
 	a.Path = path
 	return true
+}
+
+type Action int
+
+const (
+	FindFood Action = iota
+	Explore
+	Rest
+)
+
+func (a *Agent) ChooseAction() Action {
+	greedInfluence := int(float64(a.Greed.Current) / 255)
+	curiosityInfluence := int(float64(a.Curios.Current) / 255)
+	lazyInfluence := int(float64(a.Lazy.Current) / 255)
+
+	// Need To Way To Costum This Trait
+	findFood := 10 + (greedInfluence * 8) + (curiosityInfluence * 1) + (lazyInfluence * -5)
+	explore := 5 + (greedInfluence * 1) + (curiosityInfluence * 10) + (lazyInfluence * -8)
+	rest := 1 + (greedInfluence * 1) + (curiosityInfluence * -8) + (lazyInfluence * 10)
+
+	allScores := []int{findFood, explore, rest}
+
+	var act Action
+	highScore := 0
+
+	for i, score := range allScores {
+		if score > highScore {
+			act = Action(i)
+			highScore = score
+		}
+	}
+
+	return act
+}
+
+func (a *Agent) PerformAction(w *World, act Action) (int, int) {
+	var nextX, nextY int
+
+	// TODO: Until New Mechanism Added Explore Will Associate in here
+	if act == FindFood || act == Explore {
+		found := a.SniffForFood(w)
+
+		if found {
+			nextX = a.Path[0].x
+			nextY = a.Path[0].y
+		} else {
+			// TODO: Here can be Improve by Increase Field of Vision if it wandering too long
+			nextX, nextY = a.MoveAiminglessly(w)
+		}
+	}
+
+	// TODO: Missing Explore What Action They Should Do When Explore
+
+	if act == Rest {
+		return a.X, a.Y
+	}
+
+	return nextX, nextY
+}
+
+func (a *Agent) TraitControl() {
+	if a.Energy < 15 {
+		a.Greed.Current += 15
+	}
+
+	if a.Energy > 50 {
+		a.Lazy.Current += 20
+	}
 }

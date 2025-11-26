@@ -15,7 +15,14 @@ import (
 
 func main() {
 
-	w := world.NewWorld(20, 20, 1, false)
+	init := world.InitWorld{
+		Width:        20,
+		Height:       20,
+		StarterAgent: 1,
+		IsDebugOn:    false,
+	}
+
+	w := world.NewWorld(init)
 
 	world.InitLogger()
 

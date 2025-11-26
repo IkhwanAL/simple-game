@@ -42,15 +42,19 @@ And then type `make run`
       - Each Trait will show how agent approach something
 - Since now There Field Of Vision
   - How do i make them think strategize in small window vision, when energy is depleted
-  - I do want to make sure the able to remap food location (but sudden realize it too difficult right now)
-    - Why Remap? Because since there possible the agent not interest to eat the food (want to explore or wander around) i want them to just remember the location
+  - I do want to make sure the able to remember food location (but sudden realize it too difficult right now)
+    - Why Remember? Because since there possible the agent not interest to eat the food (want to explore or wander around) i want them to just remember the location
 
 ## Next Future Plan
 
 - Each Agent Able to Expand Conquer other Agent
+- Right Now The Agent Movement Is Tied By Tick, The Next Plan is To Remove This Limiter So Each Agent Have Different Movement Speed (Add More Variant buff and trait)
 
 ### Agent Trait
 
 - Greed -> Constantly Try To Hoard Food
 - Curios -> More Exploring than Hoarding Food
 - Lazy -> doesn't like to move too much until it necessary
+
+### Extend Trait
+- If the Agent Have Less Energy They Greed Will Increase

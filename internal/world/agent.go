@@ -189,7 +189,7 @@ func (a *Agent) Die(w *World) {
 	}
 }
 
-func (a *Agent) SniffForFood(w *World) bool {
+func (a *Agent) PerceiveSurrounding(w *World, lookForWhat CellType) bool {
 	type Node struct {
 		Chord Chord
 		Dist  int
@@ -301,9 +301,8 @@ func (a *Agent) ChooseAction() Action {
 func (a *Agent) PerformAction(w *World, act Action) (int, int) {
 	var nextX, nextY int
 
-	// TODO: Until New Mechanism Added Explore Will Associate in here
-	if act == FindFood || act == Explore {
-		found := a.SniffForFood(w)
+	if act == FindFood {
+		found := a.PerceiveSurrounding(w, Food)
 
 		if found {
 			nextX = a.Path[0].x
@@ -314,7 +313,21 @@ func (a *Agent) PerformAction(w *World, act Action) (int, int) {
 		}
 	}
 
-	// TODO: Missing Explore What Action They Should Do When Explore
+	if act == Explore {
+		found := a.PerceiveSurrounding(w, BuffIncreaseFoV)
+
+		if found {
+			nextX = a.Path[0].x
+			nextY = a.Path[0].y
+		} else {
+			nextX, nextY = a.MoveAiminglessly(w)
+		}
+	}
+
+	if act == Explore || act == FindFood {
+		a.ReduceEnergy()
+		a.SetAgentPosition(nextX, nextY)
+	}
 
 	if act == Rest {
 		return a.X, a.Y

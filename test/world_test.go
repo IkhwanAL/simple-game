@@ -148,7 +148,7 @@ func TestAgentToDetectFood(t *testing.T) {
 	w.AddAgent(a)
 
 	// Test Detect Closest Food And Able to Found Food
-	foundFood := a.SniffForFood(w)
+	foundFood := a.PerceiveSurrounding(w, world.Food)
 
 	if !foundFood {
 		t.Errorf("Agent is blind can't find a food even i already put a close food near agent")
@@ -157,7 +157,7 @@ func TestAgentToDetectFood(t *testing.T) {
 	// Test Detect Closest Food But No Food Found
 	removeAllFood(w)
 
-	foundFood = a.SniffForFood(w)
+	foundFood = a.PerceiveSurrounding(w, world.Food)
 
 	if foundFood {
 		t.Errorf("Agent Find an invisible food which is impossible")
@@ -182,7 +182,7 @@ func TestAgentVisionFieldOfView(t *testing.T) {
 
 	w.AddAgent(a)
 
-	foundFood := a.SniffForFood(w)
+	foundFood := a.PerceiveSurrounding(w, world.Food)
 
 	if foundFood {
 		t.Errorf("Agent is blind need a glasess here, the vision is not working")
@@ -190,7 +190,7 @@ func TestAgentVisionFieldOfView(t *testing.T) {
 
 	a.FieldOfVision -= 4
 
-	foundFood = a.SniffForFood(w)
+	foundFood = a.PerceiveSurrounding(w, world.Food)
 
 	if foundFood {
 		t.Errorf("Agent is suppose to be blind here, the vision is not working")

@@ -171,15 +171,11 @@ func (w *World) Tick() {
 
 		nextX, nextY = a.PerformAction(w, act)
 
-		if nextX != prevX || nextY != prevY {
-			a.ReduceEnergy()
-			a.SetAgentPosition(nextX, nextY)
-		}
-
 		if len(a.Path) > 0 {
 			a.Path = a.Path[1:]
 		}
 
+		// TODO: What To Call Now I Have Eat And Power Up
 		a.Eat(w)
 
 		a.Die(w)

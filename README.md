@@ -38,8 +38,10 @@ And then type `make run`
 - Add Custom Personality for Each Agent
   - Personality Will Have 3 Trait, Greed, Curiosity, Lazy // Max Value 255
     - Each Agent Will Have Color of it's own (but the one from reproduction will have same color)
+      - Or maybe they create new color it some kind of separation from their colony
     - Each Move Will Unique Depend On Value Combination of 3 Value
       - Each Trait will show how agent approach something
+    - Able To Visual the Trait of agent
 - Since now There Field Of Vision
   - How do i make them think strategize in small window vision, when energy is depleted
   - I do want to make sure the able to remember food location (but sudden realize it too difficult right now)

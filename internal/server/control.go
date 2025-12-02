@@ -106,5 +106,5 @@ func ControlRouter(mux *http.ServeMux, service *Service) {
 	mux.HandleFunc("/speed-down", speedDownHandler(service))
 	mux.HandleFunc("/spawn-agent", spawnAgentHandler(service))
 	mux.HandleFunc("/spawn-food", spawnFoodHandler(service))
-	mux.HandleFunc("/spawn-multiple-food", spawnFoodHandler(service))
+	mux.HandleFunc("/spawn-multiple-food", spawnMultipleFoodHandler(service))
 }

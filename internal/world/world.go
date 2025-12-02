@@ -194,7 +194,7 @@ func (w *World) Tick() {
 
 	foodGowth := rand.IntN(1000)
 	if foodGowth < 300 {
-		w.SpawnFood(10)
+		w.SpawnFood(8)
 	}
 
 	buffSpawnChance := rand.IntN(1000)

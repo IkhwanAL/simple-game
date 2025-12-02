@@ -40,8 +40,10 @@ func (s *Service) SpawnAgent() {
 	s.crtl.CmdChan <- world.CmdSpawnAgent{}
 }
 
-func (s *Service) SpawnFood() {
-	s.crtl.CmdChan <- world.CmdSpawnFood{}
+func (s *Service) SpawnFood(n int) {
+	s.crtl.CmdChan <- world.CmdSpawnFood{
+		TotalFood: n,
+	}
 }
 
 func (s *Service) StartTick(interval time.Duration, hub *WebSocketHub) {

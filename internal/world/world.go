@@ -86,9 +86,7 @@ func NewWorld(init InitWorld) *World {
 		}
 	}
 
-	for range width * height / 5 {
-		world.SpawnFood()
-	}
+	world.SpawnFood(width * height / 5)
 
 	for range init.totalInitBuff {
 		world.SpawnBuff()
@@ -128,12 +126,15 @@ func (w *World) AddAgent(a *Agent) {
 	w.Agents = append(w.Agents, a)
 }
 
-func (w *World) SpawnFood() {
-	x, y := rand.IntN(w.Height), rand.IntN(w.Width)
+// TODO: Need Some Upgrade
+func (w *World) SpawnFood(n int) {
+	for range n {
+		x, y := rand.IntN(w.Height), rand.IntN(w.Width)
 
-	if w.Grid[y][x].Type == Empty {
-		w.Grid[y][x].Type = Food
-		w.AmountFood += 1
+		if w.Grid[y][x].Type == Empty {
+			w.Grid[y][x].Type = Food
+			w.AmountFood += 1
+		}
 	}
 }
 
@@ -192,8 +193,8 @@ func (w *World) Tick() {
 	}
 
 	foodGowth := rand.IntN(1000)
-	if foodGowth < 250 {
-		w.SpawnFood()
+	if foodGowth < 300 {
+		w.SpawnFood(10)
 	}
 
 	buffSpawnChance := rand.IntN(1000)

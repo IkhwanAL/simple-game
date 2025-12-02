@@ -33,7 +33,7 @@ func (c *WorldController) loop() {
 				agent := NewAgent(rand.IntN(c.world.Width-1), rand.IntN(c.world.Height-1), StartingEnergy, "")
 				c.world.AddAgent(agent)
 			case CmdSpawnFood:
-				c.world.SpawnFood()
+				c.world.SpawnFood(msg.TotalFood)
 			case CmdSnapshot:
 				msg.Reply <- c.world.Snapshot()
 			case CmdStop:

@@ -4,7 +4,9 @@ type Command any
 
 type CmdTick struct{}
 type CmdSpawnAgent struct{}
-type CmdSpawnFood struct{}
+type CmdSpawnFood struct {
+	TotalFood int
+}
 type CmdSnapshot struct {
 	Reply chan WorldSnapshot
 }

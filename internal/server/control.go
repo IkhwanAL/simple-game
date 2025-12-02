@@ -85,7 +85,18 @@ func spawnFoodHandler(service *Service) http.HandlerFunc {
 			fmt.Fprint(w, err)
 			return
 		}
-		service.SpawnFood()
+		service.SpawnFood(1)
+	}
+}
+
+func spawnMultipleFoodHandler(service *Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := IsMethodCorrect(w, r, "POST")
+		if err != nil {
+			fmt.Fprint(w, err)
+			return
+		}
+		service.SpawnFood(10)
 	}
 }
 
@@ -95,4 +106,5 @@ func ControlRouter(mux *http.ServeMux, service *Service) {
 	mux.HandleFunc("/speed-down", speedDownHandler(service))
 	mux.HandleFunc("/spawn-agent", spawnAgentHandler(service))
 	mux.HandleFunc("/spawn-food", spawnFoodHandler(service))
+	mux.HandleFunc("/spawn-multiple-food", spawnFoodHandler(service))
 }

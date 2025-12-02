@@ -1,0 +1,60 @@
+package ui
+
+import "fmt"
+
+templ AgentStats() {
+	<h4 class="text-l font-bold mb-4">Agent Stats</h4>
+	<div id="card" class="space-y-2 w-full">
+		@AgentColor("#ff0000")
+		@Label("Agent Id", 1)
+		@Label("Avg Energy", 1.9)
+		<div class="grid grid-cols-2 gap-2 text-md cursor-pointer select-none" onclick="toggleDetail()">
+			<p>Detail</p>
+			<span id="chevron-toggle">
+				@ChevronDown()
+			</span>
+		</div>
+		<div class="hidden space-y-2" id="agent-detail">
+			@LabelTrait("Greed", 100, 120)
+			@LabelTrait("Curios", 150, 150)
+			@LabelTrait("Lazy", 70, 100)
+		</div>
+	</div>
+}
+
+templ AgentColor(color string) {
+	<div id="box" class="w-full h-5" style={ SetAgentColor(color) }></div>
+}
+
+templ Label[T any](labelName string, value T) {
+	<div id="label" class="grid grid-cols-2 gap-2 text-md">
+		<label>{ labelName }</label>
+		<p>{ fmt.Sprintf("%v", value) }</p>
+	</div>
+}
+
+templ LabelTrait(trait string, baseTrait int, currentTrait int) {
+	<div id="label-trait" class="grid grid-cols-2 gap-2 text-md">
+		<span class="col-span-2 font-semibold">{ trait }</span>
+		<div>
+			<label>Baseline</label>
+			<p>{ baseTrait }</p>
+		</div>
+		<div>
+			<label>Current</label>
+			<p>{ currentTrait }</p>
+		</div>
+	</div>
+}
+
+templ ChevronDown() {
+	<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+		<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"></path>
+	</svg>
+}
+
+templ ChevronUp() {
+	<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+		<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"></path>
+	</svg>
+}

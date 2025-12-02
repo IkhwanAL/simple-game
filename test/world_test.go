@@ -1,4 +1,4 @@
-package world
+package test
 
 import (
 	"testing"
@@ -16,7 +16,7 @@ func TestAgentMovement(t *testing.T) {
 	}
 
 	w := world.NewWorld(init)
-	agent := world.NewAgent(5, 5, 10)
+	agent := world.NewAgent(5, 5, 10, "")
 
 	w.AddAgent(agent)
 
@@ -58,7 +58,7 @@ func TestReproductionMechanism(t *testing.T) {
 		IsDebugOn:    true,
 	}
 	w := world.NewWorld(init)
-	a := world.NewAgent(0, 0, 10)
+	a := world.NewAgent(0, 0, 10, "")
 
 	w.AddAgent(a)
 
@@ -79,7 +79,7 @@ func TestDieMechanismAsync(t *testing.T) {
 		IsDebugOn:    false,
 	}
 	w := world.NewWorld(init)
-	a := world.NewAgent(0, 0, 10)
+	a := world.NewAgent(0, 0, 10, "")
 	w.AddAgent(a)
 
 	a.Energy = 0
@@ -106,7 +106,7 @@ func TestDieMechanism(t *testing.T) {
 		IsDebugOn:    false,
 	}
 	w := world.NewWorld(init)
-	a := world.NewAgent(0, 0, 10)
+	a := world.NewAgent(0, 0, 10, "")
 	w.AddAgent(a)
 
 	w.RemoveAgent(a)
@@ -142,7 +142,7 @@ func TestAgentToDetectFood(t *testing.T) {
 	w := world.NewWorld(init)
 	removeAllFood(w)
 
-	a := world.NewAgent(0, 0, 100)
+	a := world.NewAgent(0, 0, 100, "")
 	spawnOneFood(w, a, 1)
 
 	w.AddAgent(a)
@@ -174,7 +174,7 @@ func TestAgentVisionFieldOfView(t *testing.T) {
 	w := world.NewWorld(init)
 	removeAllFood(w)
 
-	a := world.NewAgent(0, 0, 100)
+	a := world.NewAgent(0, 0, 100, "")
 
 	a.FieldOfVision += 4
 

@@ -38,3 +38,9 @@ func GetAgentViewStyle(a world.Agent) map[string]string {
 		"top":  strconv.Itoa(a.Y*16) + "px",
 	}
 }
+
+func SetAgentColor(color string) map[string]string {
+	return map[string]string{
+		"background-color": color,
+	}
+}

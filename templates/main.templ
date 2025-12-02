@@ -8,35 +8,31 @@ templ MainView(content templ.Component) {
 			<title>TinyWorlds</title>
 			<script src="https://unpkg.com/htmx.org@2.0.8/dist/htmx.min.js"></script>
 			<link href="/static/tailwind.css" rel="stylesheet"/>
+			<link href="/css/toggle.css" rel="stylesheet"/>
 			<script type="module" src="/js/ws.js"></script>
 			<script type="module" src="/js/client.js"></script>
 			<script type="module" src="/js/canvas.js"></script>
+			<script src="/js/dropdown.js"></script>
 		</head>
-		<style>
-      .cell {width: 16px; height: 16px;}
-      .agent { 
-        transition: transform 0.2s linear, opacity 0.2s ease-out;
-        will-change: transform;
-      }
-      .agent.dead {
-        opacity: 0;
-      }
-      .agent.new {
-        transform: scale(0.5);
-        opacity: 0;
-      }
-    </style>
 		<body
-			class="bg-gray-900 text-gray-100 flex flex-col items-center min-h-screen py-6"
+			class="bg-gray-900 text-gray-100 min-h-screen py-6"
 		>
-			<h1 class="text-3xl font-bold mb-4">🌍 TinyWorlds</h1>
-			@ControlView()
-			<canvas width="320" height="320" class="border-2 border-white" id="worldCanvas"></canvas>
-			<!-- <div id="world" class="grid border-2 border-white mb-4"></div> -->
-			<div id="stats" class="text-gray-400"></div>
-			<p class="mt-4 text-sm text-gray-400">
-				Agent moves every second & eats green food 🍎
-			</p>
+			<div class="mx-auto w-full">
+				<h1 class="text-3xl font-bold mb-4 text-center">🌍 TinyWorlds</h1>
+				<div class="flex">
+					<div class="w-64 p-4 bg-gray-800 h-fit">
+						@AgentStats()
+					</div>
+					<div class="flex-1 flex flex-col items-center">
+						@ControlView()
+						<canvas width="500" height="500" class="border-2 border-white" id="worldCanvas"></canvas>
+						<div id="stats" class="text-gray-400"></div>
+					</div>
+				</div>
+				<p class="mt-4 text-sm text-gray-400 text-center">
+					Agent moves every second & eats green food 🍎
+				</p>
+			</div>
 		</body>
 	</html>
 }

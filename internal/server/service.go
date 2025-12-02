@@ -70,7 +70,7 @@ func (s *Service) StartTick(interval time.Duration, hub *WebSocketHub) {
 
 				msg, err := json.Marshal(snapshot)
 				if err != nil {
-					log.Fatal(err)
+					log.Fatalf("failed to send information to client %v", err)
 				}
 				hub.Broadcast(context.Background(), msg)
 			case newInterval := <-s.speedChan:

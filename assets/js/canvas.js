@@ -6,7 +6,30 @@ import { nextSnapshot, prevSnapshot, lastUpdate } from "./client.js"
 const canvas = document.getElementById("worldCanvas")
 const context = canvas.getContext("2d")
 
-const cellSize = 16
+let canvasWidth = 500
+let canvasHeight = 500
+
+let cellSize = 16
+
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("called")
+  initCanvas()
+})
+
+function initCanvas() {
+  const canvasBound = canvas.getBoundingClientRect()
+  canvasWidth = canvasBound.width
+  canvasHeight = canvasBound.height
+
+  canvas.width = canvasBound.width
+  canvas.height = canvasBound.height
+
+  const ratioW = canvasWidth / 20
+  const ratioH = canvasHeight / 20
+
+  cellSize = Math.floor(Math.min(ratioW, ratioH))
+
+}
 
 function renderLoop() {
 
@@ -73,7 +96,7 @@ export function renderWorld(prevSnapshot, nextSnapshot, interpolation) {
     agentStore[agent.id].opacity = smoothOpacity
 
     context.globalAlpha = smoothOpacity
-    context.fillStyle = "#ef4444"
+    context.fillStyle = "#" + agent.color
     context.fillRect(smoothX * cellSize, smoothY * cellSize, cellSize, cellSize)
     context.globalAlpha = 1
 

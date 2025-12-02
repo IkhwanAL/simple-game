@@ -20,11 +20,6 @@ var DIRS = [4][2]int{
 
 var nextAgentId atomic.Int64
 
-type Trait struct {
-	Base    uint8
-	Current uint8
-}
-
 type Agent struct {
 	ID            int
 	X, Y          int
@@ -47,7 +42,7 @@ var maxTraitValue uint8 = (1 << 8) - 1
 
 var baseValue uint8 = 100
 
-func NewAgent(x, y, energy int) *Agent {
+func NewAgent(x, y, energy int, color string) *Agent {
 	greed := uint8(rand.IntN(int(maxTraitValue)))
 	curious := uint8(rand.IntN(int(maxTraitValue)))
 	lazy := uint8(rand.IntN(int(maxTraitValue)))
@@ -56,7 +51,9 @@ func NewAgent(x, y, energy int) *Agent {
 	startingDirection := direction[rand.IntN(len(direction))]
 	id := newAgentID()
 
-	color := fmt.Sprintf("%x%x%x", greed, curious, lazy)
+	if color == "" {
+		color = fmt.Sprintf("%x%x%x", greed, curious, lazy)
+	}
 
 	return &Agent{
 		ID:            id,
@@ -77,6 +74,12 @@ func (a *Agent) Eat(w *World) {
 		w.AmountFood -= 1
 		a.Energy += EnergyFoodGain
 		a.Path = nil
+	}
+}
+
+func (a *Agent) GrapBuff(w *World) {
+	if w.Grid[a.Y][a.X].Type == BuffIncreaseFoV {
+		a.FieldOfVision += 1
 	}
 }
 
@@ -138,9 +141,9 @@ func (a *Agent) SetAgentPosition(px, py int) {
 }
 
 func (a *Agent) Reproduction(w *World) *Agent {
-	chance := rand.IntN(1000)
+	chance := rand.IntN(1000) // Percentile
 
-	success := 50
+	success := 20
 
 	if w.DebugMode {
 		chance = 1
@@ -173,7 +176,7 @@ func (a *Agent) Reproduction(w *World) *Agent {
 				continue
 			}
 
-			return NewAgent(nx, ny, StartingEnergy)
+			return NewAgent(nx, ny, StartingEnergy, a.Color)
 		}
 
 	}
@@ -216,6 +219,10 @@ func (a *Agent) PerceiveSurrounding(w *World, lookForWhat CellType) bool {
 		if node.Dist > 0 && (cur.x != a.X || cur.y != a.Y) && w.Grid[cur.y][cur.x].Type == Food {
 			target = &cur
 			break
+		}
+
+		if node.Dist > 0 && (cur.x != a.X || cur.y != a.Y) && w.Grid[cur.y][cur.x].Type == BuffIncreaseFoV {
+			a.Curios.Current += 5
 		}
 
 		for _, d := range DIRS {
@@ -273,7 +280,7 @@ const (
 	Rest
 )
 
-func (a *Agent) ChooseAction() Action {
+func (a *Agent) ChooseNextAction() Action {
 	greedInfluence := int(float64(a.Greed.Current) / 255)
 	curiosityInfluence := int(float64(a.Curios.Current) / 255)
 	lazyInfluence := int(float64(a.Lazy.Current) / 255)
@@ -298,7 +305,7 @@ func (a *Agent) ChooseAction() Action {
 	return act
 }
 
-func (a *Agent) PerformAction(w *World, act Action) (int, int) {
+func (a *Agent) PredictNextMove(w *World, act Action) (int, int) {
 	var nextX, nextY int
 
 	if act == FindFood {
@@ -325,8 +332,8 @@ func (a *Agent) PerformAction(w *World, act Action) (int, int) {
 	}
 
 	if act == Explore || act == FindFood {
-		a.ReduceEnergy()
 		a.SetAgentPosition(nextX, nextY)
+		a.ReduceEnergy()
 	}
 
 	if act == Rest {
@@ -336,12 +343,25 @@ func (a *Agent) PerformAction(w *World, act Action) (int, int) {
 	return nextX, nextY
 }
 
+func (a *Agent) PerformAction(w *World) {
+	a.Eat(w)
+	a.GrapBuff(w)
+	a.Die(w)
+}
+
+// TODO: i Need to add more
 func (a *Agent) TraitControl() {
 	if a.Energy < 15 {
 		a.Greed.Current += 15
 	}
 
 	if a.Energy > 50 {
-		a.Lazy.Current += 20
+		a.Lazy.Current += 18
 	}
+}
+
+func (a *Agent) TickPersonality() {
+	a.Greed.PushTowardBase(0.05)
+	a.Curios.PushTowardBase(0.05)
+	a.Lazy.PushTowardBase(0.05)
 }

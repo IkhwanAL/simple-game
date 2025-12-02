@@ -29,7 +29,15 @@ func MainView(content templ.Component) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html><head><meta charset=\"utf-8\"><title>TinyWorlds</title><script src=\"https://unpkg.com/htmx.org@2.0.8/dist/htmx.min.js\"></script><link href=\"/static/tailwind.css\" rel=\"stylesheet\"><script type=\"module\" src=\"/js/ws.js\"></script><script type=\"module\" src=\"/js/client.js\"></script><script type=\"module\" src=\"/js/canvas.js\"></script></head><style>\r\n      .cell {width: 16px; height: 16px;}\r\n      .agent { \r\n        transition: transform 0.2s linear, opacity 0.2s ease-out;\r\n        will-change: transform;\r\n      }\r\n      .agent.dead {\r\n        opacity: 0;\r\n      }\r\n      .agent.new {\r\n        transform: scale(0.5);\r\n        opacity: 0;\r\n      }\r\n    </style><body class=\"bg-gray-900 text-gray-100 flex flex-col items-center min-h-screen py-6\"><h1 class=\"text-3xl font-bold mb-4\">🌍 TinyWorlds</h1>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html><head><meta charset=\"utf-8\"><title>TinyWorlds</title><script src=\"https://unpkg.com/htmx.org@2.0.8/dist/htmx.min.js\"></script><link href=\"/static/tailwind.css\" rel=\"stylesheet\"><link href=\"/css/toggle.css\" rel=\"stylesheet\"><script type=\"module\" src=\"/js/ws.js\"></script><script type=\"module\" src=\"/js/client.js\"></script><script type=\"module\" src=\"/js/canvas.js\"></script><script src=\"/js/dropdown.js\"></script></head><body class=\"bg-gray-900 text-gray-100 min-h-screen py-6\"><div class=\"mx-auto w-full\"><h1 class=\"text-3xl font-bold mb-4 text-center\">🌍 TinyWorlds</h1><div class=\"flex\"><div class=\"w-64 p-4 bg-gray-800 h-fit\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = AgentStats().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><div class=\"flex-1 flex flex-col items-center\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -37,7 +45,7 @@ func MainView(content templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<canvas width=\"320\" height=\"320\" class=\"border-2 border-white\" id=\"worldCanvas\"></canvas><!-- <div id=\"world\" class=\"grid border-2 border-white mb-4\"></div> --><div id=\"stats\" class=\"text-gray-400\"></div><p class=\"mt-4 text-sm text-gray-400\">Agent moves every second & eats green food 🍎</p></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<canvas width=\"500\" height=\"500\" class=\"border-2 border-white\" id=\"worldCanvas\"></canvas><div id=\"stats\" class=\"text-gray-400\"></div></div></div><p class=\"mt-4 text-sm text-gray-400 text-center\">Agent moves every second & eats green food 🍎</p></div></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -85,6 +85,7 @@ func Router(svc *Service, hub *WebSocketHub) http.Handler {
 
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir("assets/js"))))
+	mux.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("assets/css"))))
 
 	return mux
 }

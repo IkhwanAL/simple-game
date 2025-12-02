@@ -1,0 +1,8 @@
+#chevron-toggle svg {
+  transition: transform 1s ease;
+  transform-origin: center;
+}
+
+.rotate {
+  transform: rotate(180deg);
+}

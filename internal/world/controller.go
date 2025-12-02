@@ -30,7 +30,7 @@ func (c *WorldController) loop() {
 			case CmdTick:
 				c.world.Tick()
 			case CmdSpawnAgent:
-				agent := NewAgent(rand.IntN(c.world.Width-1), rand.IntN(c.world.Height-1), StartingEnergy)
+				agent := NewAgent(rand.IntN(c.world.Width-1), rand.IntN(c.world.Height-1), StartingEnergy, "")
 				c.world.AddAgent(agent)
 			case CmdSpawnFood:
 				c.world.SpawnFood()

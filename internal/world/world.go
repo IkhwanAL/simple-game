@@ -1,6 +1,7 @@
 package world
 
 import (
+	"math"
 	"math/rand/v2"
 )
 
@@ -112,7 +113,7 @@ func NewWorld(init InitWorld) *World {
 	for i := range init.StarterAgent {
 		location := freeCells[i]
 		x, y := location[0], location[1]
-		agent := NewAgent(x, y, StartingEnergy)
+		agent := NewAgent(x, y, StartingEnergy, "")
 
 		world.Agents = append(world.Agents, agent)
 		world.Grid[y][x].Type = AgentEn
@@ -167,18 +168,17 @@ func (w *World) Tick() {
 
 		a.TraitControl()
 
-		act := a.ChooseAction()
+		act := a.ChooseNextAction()
 
-		nextX, nextY = a.PerformAction(w, act)
+		nextX, nextY = a.PredictNextMove(w, act)
 
 		if len(a.Path) > 0 {
 			a.Path = a.Path[1:]
 		}
 
-		// TODO: What To Call Now I Have Eat And Power Up
-		a.Eat(w)
+		a.PerformAction(w)
 
-		a.Die(w)
+		a.TickPersonality()
 
 		// Reflect Into World Map
 		w.Grid[prevY][prevX].Type = Empty
@@ -191,9 +191,14 @@ func (w *World) Tick() {
 		}
 	}
 
-	growth := rand.IntN(1000)
-	if growth < 250 {
+	foodGowth := rand.IntN(1000)
+	if foodGowth < 250 {
 		w.SpawnFood()
+	}
+
+	buffSpawnChance := rand.IntN(1000)
+	if buffSpawnChance < 100 {
+		w.SpawnBuff()
 	}
 }
 
@@ -222,10 +227,11 @@ type WorldSnapshot struct {
 }
 
 type AgentSnapshot struct {
-	ID     int  `json:"id"`
-	X      int  `json:"x"`
-	Y      int  `json:"y"`
-	IsDead bool `json:"isDead"`
+	ID     int    `json:"id"`
+	X      int    `json:"x"`
+	Y      int    `json:"y"`
+	IsDead bool   `json:"isDead"`
+	Color  string `json:"color"`
 }
 
 func (w *World) Snapshot() WorldSnapshot {
@@ -268,11 +274,17 @@ func (w *World) Snapshot() WorldSnapshot {
 			X:      a.X,
 			Y:      a.Y,
 			IsDead: a.IsDie,
+			Color:  a.Color,
 		})
 		sumEnergy += float64(a.Energy)
 	}
 
-	aCopy.AvgEnergy = sumEnergy / float64(len(w.Agents))
+	avg := sumEnergy / float64(len(w.Agents))
+	if math.IsNaN(avg) {
+		avg = 0.0
+	}
+
+	aCopy.AvgEnergy = avg
 
 	aCopy.Agents = agents
 	if aCopy.Agents == nil {
